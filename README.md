@@ -39,3 +39,5 @@ TODO finish copy
 ## Readings:
 - [Morita, Takashi (2018). Unsupervised learning of lexical subclasses from phonotactics](https://dspace.mit.edu/handle/1721.1/120612)
 
+## Potentially useful tools:
+- https://github.com/bootphon/phonemizer to convert Japanese to IPA
