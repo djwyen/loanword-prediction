@@ -63,12 +63,17 @@ class Transcriber():
         'ヶ' : '', # can be ka ga and ko depending on context
         'ヽ' : '', # iteration mark, equivalent to 々. Repeats preceding syllable
         'ヾ' : '', # repeats preceding syllable and voices it
+        'ー' : 'ː', # makes the preceding vowel long. Loanwords more often use this, the 'chōonpu', than native words, which simply write the vowel.
     }
 
     # NOTE to self: the above copy paste took a ridiculously long time and revealed to me that I should probably investigate another way of sourcing pronunciations of Japanese words rather than rely on the kana entries: there are some relatively complicated rules changing pronunciation as kana combine. They aren't so bad that you can't approximate them well with a one-char lookahead substitution, but given that there are some kana that can vary in their reading, one should consider finding other ways of transcribing.
 
     def convert_kana(self, kana: str) -> List[int]:
         '''Converts all kana but -n, since that undergoes place assimilation'''
+
+        # idea: create a dict like the kana_to_ipa dict above that simply transcribes each kana naively, then goes through and repairs everything to look like real Japanese.
+        # I mean, you were already going to do something like this given the existence of Japanese -n and the "geminating" kana
+        # this shouldn't be too bad, the only real rules you have to handle are the palatalization small kana, nasal assimilation, and investigating whether dzi really is intervocalically modulated or not
         return kana_to_ipa[kana]
 
     def convert_word(self, word: str) -> List[int]:
