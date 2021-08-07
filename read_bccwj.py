@@ -6,6 +6,7 @@ This has some information on labels but it seems less relevant than the manual +
 
 import os
 import csv
+from data_processing import transcriber
 
 # path to the short BCCWJ word frequency list
 PATH_TO_TSV = "data/BCCWJ/BCCWJ_frequencylist_suw_ver1_0.tsv"
@@ -33,30 +34,38 @@ def main():
         #   and Google Translate + knowledge of 漢字 has served as a good aid in filling in the gaps
         prop_to_index = {header[i] : i for i in range(len(header))}
 
-        yamato_count = 0
-        sino_count = 0
-        foreign_count = 0
-        for entry in reader:
-            core_freq = entry[prop_to_index['core_frequency']]
-            if core_freq != '' and int(core_freq) > 0:
-                origin_lang = entry[prop_to_index['wType']]
-                if origin_lang==YAMATO:
-                    yamato_count += 1
-                elif origin_lang==SINO:
-                    sino_count += 1
-                elif origin_lang==FOREIGN:
-                    foreign_count += 1
+        # yamato_count = 0
+        # sino_count = 0
+        # foreign_count = 0
+        # for entry in reader:
+        #     core_freq = entry[prop_to_index['core_frequency']]
+        #     if core_freq != '' and int(core_freq) > 0:
+        #         origin_lang = entry[prop_to_index['wType']]
+        #         if origin_lang==YAMATO:
+        #             yamato_count += 1
+        #         elif origin_lang==SINO:
+        #             sino_count += 1
+        #         elif origin_lang==FOREIGN:
+        #             foreign_count += 1
         
-        print(f'{yamato_count} Yamato words')
-        print(f'{sino_count} Sino-Japanese words')
-        print(f'{foreign_count} Foreign words')
+        # print(f'{yamato_count} Yamato words')
+        # print(f'{sino_count} Sino-Japanese words')
+        # print(f'{foreign_count} Foreign words')
         # good, after applying the core frequency > 0 requirement we reproduce Takashi's counts (at least for SJ and foreign, which he discloses):
         # 9893 Yamato, 13373 Sino-Japanese, 4421 foreign
 
-        # for i in range(1000):
-        #     x = next(reader)
-        #     if i == 928:
-        #         print(x[78])
+        t = transcriber.Transcriber()
+        random_indices = {928, 123, 515, 209, 508, 40, 93, 320, 724, 540}
+        for i in range(1000):
+            x = next(reader)
+            if i in random_indices:
+                ipa = ''
+                try:
+                    ipa = t.katakana_to_ipa(x[1])
+                except:
+                    pass
+                print(x[1], x[2], ipa)
+                
             
 
 if __name__ == '__main__':
