@@ -41,3 +41,5 @@ TODO finish copy
 
 ## Potentially useful tools:
 - https://github.com/bootphon/phonemizer to convert Japanese to IPA
+- https://github.com/dmort27/panphon to convert IPA to feature vectors
+- https://lingpy.org/ to align words
