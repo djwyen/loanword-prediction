@@ -229,6 +229,24 @@ class Transcriber():
                     pass # drop the J, it is neutralized by the segment here
                 else:
                     repaired += 'ʲ' # palatalize preceding consonant
+            elif seg == 'ɯ':
+                if i == 0:
+                    repaired += seg
+                else:
+                    pre = intermediate[i-1]
+                    if pre == 'o':
+                        repaired += 'o'
+                    else:
+                        repaired += 'ɯ'
+            elif seg == 'i':
+                if i == 0:
+                    repaired += seg
+                else:
+                    pre = intermediate[i-1]
+                    if pre == 'e':
+                        repaired += 'e'
+                    else:
+                        repaired += seg
             else:
                 repaired += seg
 
