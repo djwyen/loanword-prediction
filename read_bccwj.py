@@ -14,6 +14,7 @@ PATH_TO_TSV = "data/BCCWJ/BCCWJ_frequencylist_suw_ver1_0.tsv"
 # we are interested in these particular properties:
 #   lForm (index 1): a katakana transcription of the given word
 #   lemma (index 2): the Japanese written form of the word, in kanji/hiragana/katakana
+#   pos   (index 3): the part of speech of the word
 #   wType (index 5): the sublexicon of origin for a given word, namely native Yamato (和) Sino-Japanese (漢) or foreign (外).
 #       There are also mixed etymology words (混), proper names (固), and symbols (記号),
 #       which covers anything not written in a Japanese script (eg acronyms like 'DVD')
@@ -22,6 +23,10 @@ PATH_TO_TSV = "data/BCCWJ/BCCWJ_frequencylist_suw_ver1_0.tsv"
 YAMATO = '和'
 SINO = '漢'
 FOREIGN = '外'
+
+# the relevant parts-of-speech for certain kinds of words one may want to exclude
+PARTICLE = '助詞'
+ONOMATOPOEIA = '感動詞'
 
 def main():
     with open(PATH_TO_TSV) as f:
