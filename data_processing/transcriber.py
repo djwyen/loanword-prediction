@@ -1,4 +1,5 @@
 from typing import List, Mapping
+from data_processing.data_errors import UnsupportedKanaError
 
 # TODO probably we don't need a transcriber class? but it is nice to have the names here isolated, so consider it.
 
@@ -74,12 +75,20 @@ class Transcriber():
         Converts a word or series of words in katakana to its IPA equivalent.
         
         The transcription is pretty broad, I'm not including things like the lip rounding on [ɯ] and the like.
-        Transcription occurs in two steps: first, the kana are naively substituted one to one to their correlates.
+        Transcription occurs in three steps: first, the kana are naively substituted one to one to their correlates.
         For many kana these correlates are indeed their IPA equivalents, but for others it is a kind of intermediate
         representation.
-        In the second step, the string is repaired with simple regex substitutions.
-        
+        In the second step, the string is repaired with simple substitutions that reflect how the string is
+        actually pronounced.
+        In the final step, we conver the remaining non-IPA segments to proper IPA.
+
         TODO convert to regex for speed
+        TODO this newest version admits onomatopoeia, which use katakana in really strange ways, and which may represent
+        a stratum of Japanese that abides by different phonotactics. Should we exclude them, or at least create two
+        versions of this function? For the one that abides by standard phonotactics, we can include pointed
+        assert statements, and it's much clearer what's going on.
+        I feel like this version was made somewhat messy in trying to let certain onomatopoeia through, and I fear
+        that it has possibly made other transcriptions incorrect.
         '''
 
         katakana_to_intermediate = {
@@ -124,7 +133,7 @@ class Transcriber():
 
             'ラ' : 'ɾa', 'リ' : 'ɾi', 'ル' : 'ɾɯ', 'レ' : 'ɾe', 'ロ' : 'ɾo',
             'ヮ' : '', # this is obsolete, don't think it will be encountered.
-            'ワ' : 'ɰa', 
+            'ワ' : 'ɰa',
             'ヰ' : 'i',
             'ヱ' : 'e',
             'ヲ' : 'o',
@@ -134,27 +143,48 @@ class Transcriber():
             'ヶ' : '', # can be ka ga and ko depending on context; not encoding it
             'ヽ' : 'ヽ', # iteration mark, equivalent to 々. Repeats preceding syllable
             'ヾ' : 'ヾ', # repeats preceding syllable and voices it
-            'ー' : 'ー', # makes the preceding vowel long. Loanwords more often use this, the 'chōonpu', than native words, which simply write the vowel.
+            'ー' : 'R', # encoding long vowel as R
         }
+        
+        # exceptions: these particular Japanese words are using は was a particle instead of a kana,
+        # so it's pronounced 'wa' instead of 'ha' there
+        exceptions = {
+            'コンニチハ' : 'koɲit͡ɕiɰa',
+            'コンバンハ' : 'kombaũ͍ɰa',
+            'コンバチハ' : 'kombat͡ɕiɰa'
+        }
+        # I don't want to deal with detecting these so I will just hardcode them.
+        # We're working with a particular dataset, and the Japanese language is unlikely to change soon,
+        # so I think it's fine to hardcode them.
+        if word in exceptions:
+            return exceptions[word]
 
         # first, we use the above dictionary to convert the kana to our intermediate string:
         intermediate = u''
-        for kana in word:
-            assert(kana in katakana_to_intermediate)
-            intermediate += katakana_to_intermediate[kana]
+        for i, kana in enumerate(word):
+            try:
+                assert(kana in katakana_to_intermediate)
+            except:
+                return None # a way to signal that this isn't a transcribable word
+                # print('kana not found:', kana)
+            
+            if kana == 'ヽ':
+                pre = word[i-1]
+                intermediate += katakana_to_intermediate[pre]
+            elif kana == 'ヾ':
+                # I'm too lazy to create a huge dictionary mapping each kana to its equivalent with the tenten,
+                # so I will exploit the way katakana are encoded in Unicode.
+                # The version of a kana with dakuten has unicode ID one greater than its dakutenless counterpart,
+                # eg ord('フ') + 1 == ord('ブ')
+                pre = word[i-1]
+                unicode_id = ord(pre) # already an int
+                voiced_kana = chr(unicode_id + 1)
+                intermediate += katakana_to_intermediate[voiced_kana]
+            elif kana in {'ヮ', 'ヵ', 'ヶ'}: # these kana aren't supported since they have unclear readings
+                raise UnsupportedKanaError(kana)
+            else:
+                intermediate += katakana_to_intermediate[kana]
 
-        # now we process/repair the intermediate
-        # the order of some of these is quite important! these effects are relevant:
-        # 1. consonant gemination bleeds affricates leniting into fricatives, eg
-        #     eg one gets こっち realized as 'kotchi', not 'kosshi'
-        # 2. we must decide whether to realize D before realizing geminates, placement of N, etc.
-        #     because we want to naively be able to take the next segment and examine its features
-        #     (the same is not true of J since it necessarily is not preceded by a sokuon/-n)
-        # TODO I think the below can be done in one pass? we can more or less preserve the invariant that anything appended to intermediate is finished. The only thing that requires a lookback is the small -jV kana but they never modify the preceding consonant. Geminate consonants and -n require a lookahead, which can interfere with unrealized 'D', but you can handle that explicitly.
-
-        repaired = ''
-
-        # using these for realization of -n and palatal assimilation
         alveolars = {'n', 't', 'd', 'ɾ', 'z', 'ʑ'}
         labials = {'m', 'p', 'b'}
         velars = {'k', 'ɡ'}
@@ -162,95 +192,123 @@ class Transcriber():
         fricatives = {'z', 'ʑ', 's', 'ɕ', 'h', 'ç', 'ɸ'}
         h_frics = {'h', 'ç', 'ɸ'}
         vowels = {'a', 'i', 'ɯ', 'e', 'o'}
-        nasals = {'n', 'm', 'ŋ', 'ĩ', 'ũ͍', 'ɴ'}
+        nasals = {'n', 'm', 'ŋ', 'I', 'U', 'ɴ'}
 
-
+        realized = ''
         for i, seg in enumerate(intermediate):
             if seg == 'D':
                 if i == 0:
-                    repaired += 'd'
+                    realized += 'd'
                 else:
                     pre = intermediate[i-1]
                     if pre == 'N':
-                        repaired += 'd'
+                        realized += 'd'
                     else:
-                        pass # d disappears intervocalically or after geminates, which this must be.
-            else:
-                repaired += seg
-        
-        intermediate = repaired
-        repaired = ''
-
-        # substitute Q with an actual geminate segment; realize N; realize long vowels; realize palatals
-        # we can do the first three simultaneously since they necessarily do not interfere with each other:
-        # Japanese has no superheavy syllables.
-        # as for the last, it can be done simultaneously since it only depends on the segments before it
-        # honestly though the performance speedup is so minimal and I worry that I am missing some bizarre edge case,
-        # especially since I don't actually speak Japanese...
-        for i, seg in enumerate(intermediate):
-            if seg == 'Q':
-                post = intermediate[i+1] # necesarily must exist; this is deployed before another syllable
-                repaired += post
-            elif seg == 'N':
-                # unless we're transcribing Bantu loanwords -n is necessarily preceded by a vowel,
-                # but one can never be too careful
-                pre = intermediate[i-1]
-                assert pre in vowels
+                        pass
+            elif seg == 'Q':
                 if i == len(intermediate) - 1:
-                    repaired += 'ɴ'
+                    # in mass media the sokuon is put at the end of a word to denote a glottal stop
+                    realized += 'ʔ'
                 else:
                     post = intermediate[i+1]
-                    if post in alveolars:
-                        repaired += 'n'
-                    elif post in labials:
-                        repaired += 'm'
-                    elif post in velars:
-                        repaired += 'ŋ'
-                    elif (post in vowels) or (post in approxs):
-                        if pre == 'i':
-                            repaired += 'ĩ' # TODO I think this counts as two chars, make sure this doesn't screw things up
-                        else:
-                            repaired += 'ũ͍'
-            elif seg == 'ー':
-                pre = intermediate[i-1] # necessarily must exist; never deployed after a closed syllable
-                assert pre in vowels
-                repaired += pre
-            elif seg == 'J':
-                # note that due to orthographic convention these can only appear after the -i kana,
-                # which is very useful to us (and suggests it may be deeper than just convention)
-                # consider the h- series: the palatalized versions always have the cedilla c
+                    if post == 'D':
+                        realized += 'd' # this is uncommon but occurs in some loans, eg 'キッズ' 'kids'
+                    elif post in vowels:
+                        realized += 'ʔ'
+                    else:
+                        realized += post
+            elif seg == 'R':
                 pre = intermediate[i-1]
-                assert pre == 'i'
-                d_pre = intermediate[i-2] # necessarily must exist; these are only deployed after syllables with initials
+                assert pre in vowels or pre == 'N' # exactly one word uses R after N, and it's the onamatopoeia NR
+                if pre == 'N':
+                    realized += 'ɴ'
+                else:
+                    realized += pre
+            elif seg == 'N':
+                # while Yamato/Sino words don't have superheavy syllables, loanwords can,
+                # so we must take the preceding segment from realized
 
-                # drop the preceding 'i', it's absorbed into the palatalization (or perhaps becomes the palatalization?)
-                repaired = repaired[:-1]
+                if i == len(intermediate) - 1 or i == 0:
+                    # -n is pronounced this way not only at the end of words
+                    # but also when it is completely alone (in interjections)
+                    realized += 'ɴ'
+                else:
+                    post = intermediate[i+1]
+                    if post in alveolars or post == 'D':
+                        realized += 'n'
+                    elif post in labials:
+                        realized += 'm'
+                    elif post in velars:
+                        realized += 'ŋ'
+                    elif (post in vowels) or (post in approxs):
+                        pre = realized[-1]
+                        # assert pre in vowels
+                        if pre == 'i':
+                            realized += 'I' # replace with ĩ later: but we want a one-to-one char correspondence for now
+                        else:
+                            realized += 'U' # replace with ũ͍ later
+            elif seg == 'J':
+                # in Yamato/Sino-Japanese words these can only appear after the -i kana,
+                # which suggests deeper phonotactic restrictions than orthographic convention.
+                # nevertheless, new loanwords may sometimes put these small jV after other
+                # kana to get a desired consonant that doesn't otherwise appear, eg bilabial f or dz
+                pre = realized[-1]
+                d_pre = realized[-2] # necessarily must exist; these are only deployed after syllables with initials
+
+                # drop the preceding 'i' or other vowel, it's absorbed into the palatalization (or perhaps becomes the palatalization?)
+                realized = realized[:-1]
                 if (d_pre in fricatives) or (d_pre == 'ɲ'):
                     pass # drop the J, it is neutralized by the segment here
                 else:
-                    repaired += 'ʲ' # palatalize preceding consonant
+                    realized += 'ʲ' # palatalize preceding consonant
             elif seg == 'ɯ':
                 if i == 0:
-                    repaired += seg
+                    realized += seg
                 else:
                     pre = intermediate[i-1]
                     if pre == 'o':
-                        repaired += 'o'
+                        realized += 'o'
                     else:
-                        repaired += 'ɯ'
+                        realized += 'ɯ'
             elif seg == 'i':
                 if i == 0:
-                    repaired += seg
+                    realized += seg
                 else:
                     pre = intermediate[i-1]
                     if pre == 'e':
-                        repaired += 'e'
+                        realized += 'e'
                     else:
-                        repaired += seg
+                        realized += seg
             else:
-                repaired += seg
+                realized += seg
 
-        return repaired
+        # we created our finished string without diacritics for ease of string manipulation;
+        # now that we're done applying phonological transformations we can polish up the
+        # string by making it proper IPA.
+        polished = ''
+        for i, char in enumerate(realized):
+            if char == 't':
+                post = realized[i+1]
+                if post == 's' or post == 'ɕ':
+                    polished += 't͡' # create the affricate with the tie
+                else:
+                    polished += 't'
+            elif char == 'd':
+                post = realized[i+1]
+                if post == 'z' or post == 'ʑ':
+                    polished += 'd͡' # create the affricate
+                else:
+                    polished += 'd'
+            elif char == 'I':
+                polished += 'ĩ'
+            elif char == 'U':
+                polished += 'ũ͍'
+            elif char == 'ɯ':
+                polished += 'ɨ' # not sure how narrow a transcription we want, might comment this out
+            else:
+                polished += char
+
+        return polished
 
     def convert_kana(self, kana: str) -> List[int]:
         '''Converts all kana but -n, since that undergoes place assimilation'''
@@ -263,6 +321,6 @@ class Transcriber():
     def convert_word(self, word: str) -> List[int]:
         pass
 
-if __name__ == '__main__':
-    t = Transcriber()
-    t.katakana_to_ipa()
+# if __name__ == '__main__':
+#     t = Transcriber()
+#     t.katakana_to_ipa()
