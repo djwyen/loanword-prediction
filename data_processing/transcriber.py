@@ -298,7 +298,7 @@ class Transcriber():
             elif char == 'I':
                 polished += 'ĩ'
             elif char == 'U':
-                polished += 'ũ͍'
+                polished += 'ũ͍' # the nasal vowels is also transcribed [ɰ̃] at times
             elif char in vowels:
                 if i == 0:
                     polished += char
