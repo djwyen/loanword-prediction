@@ -300,8 +300,17 @@ class Transcriber():
                 polished += 'ĩ'
             elif char == 'U':
                 polished += 'ũ͍'
-            elif char == 'ɯ':
-                polished += 'ɨ' # not sure how narrow a transcription we want, might comment this out
+            elif char in vowels:
+                if i == 0:
+                    polished += char
+                else:
+                    pre = realized[i-1]
+                    if char == pre:
+                        polished += 'ː'
+                    else:
+                        # if char == 'ɯ':
+                        #     polished += 'ɨ' # not sure how narrow a transcription we want, might comment this out
+                        polished += char
             else:
                 polished += char
 
