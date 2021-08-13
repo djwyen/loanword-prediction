@@ -132,15 +132,15 @@ class Transcriber():
             'ヤ' : 'ja', 'ユ' : 'jɯ', 'ヨ' : 'jo',
 
             'ラ' : 'ɾa', 'リ' : 'ɾi', 'ル' : 'ɾɯ', 'レ' : 'ɾe', 'ロ' : 'ɾo',
-            'ヮ' : '', # this is obsolete, don't think it will be encountered.
+            # 'ヮ' : '', # this is obsolete, don't think it will be encountered.
             'ワ' : 'ɰa',
             'ヰ' : 'i',
             'ヱ' : 'e',
             'ヲ' : 'o',
             'ン' : 'N', # encoding nasal as N; place assimilation and the like to come later
             'ヴ' : 'bɯ',
-            'ヵ' : '', # only used as a counter word, not encoding it
-            'ヶ' : '', # can be ka ga and ko depending on context; not encoding it
+            # 'ヵ' : '', # only used as a counter word, not encoding it
+            # 'ヶ' : '', # can be ka ga and ko depending on context; not encoding it
             'ヽ' : 'ヽ', # iteration mark, equivalent to 々. Repeats preceding syllable
             'ヾ' : 'ヾ', # repeats preceding syllable and voices it
             'ー' : 'R', # encoding long vowel as R
@@ -162,11 +162,8 @@ class Transcriber():
         # first, we use the above dictionary to convert the kana to our intermediate string:
         intermediate = u''
         for i, kana in enumerate(word):
-            try:
-                assert(kana in katakana_to_intermediate)
-            except:
-                return None # a way to signal that this isn't a transcribable word
-                # print('kana not found:', kana)
+            if kana not in katakana_to_intermediate:
+                raise UnsupportedKanaError(kana)
             
             if kana == 'ヽ':
                 pre = word[i-1]
@@ -180,8 +177,8 @@ class Transcriber():
                 unicode_id = ord(pre) # already an int
                 voiced_kana = chr(unicode_id + 1)
                 intermediate += katakana_to_intermediate[voiced_kana]
-            elif kana in {'ヮ', 'ヵ', 'ヶ'}: # these kana aren't supported since they have unclear readings
-                raise UnsupportedKanaError(kana)
+            # elif kana in {'ヮ', 'ヵ', 'ヶ'}: # these kana aren't supported since they have unclear readings
+            #     raise UnsupportedKanaError(kana)
             else:
                 intermediate += katakana_to_intermediate[kana]
 
