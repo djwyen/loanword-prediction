@@ -1,6 +1,8 @@
 from typing import List, Mapping
 from data_processing.data_errors import UnsupportedKanaError
 
+import panphon
+
 # TODO probably we don't need a transcriber class? but it is nice to have the names here isolated, so consider it.
 
 class Transcriber():
@@ -14,7 +16,6 @@ class Transcriber():
 
     katakana = {'ァ', 'ア', 'ィ', 'イ', 'ゥ', 'ウ', 'ェ', 'エ', 'ォ', 'オ', 'カ', 'ガ', 'キ', 'ギ', 'ク', 'グ', 'ケ', 'ゲ', 'コ', 'ゴ', 'サ', 'ザ', 'シ', 'ジ', 'ス', 'ズ', 'セ', 'ゼ', 'ソ', 'ゾ', 'タ', 'ダ', 'チ', 'ヂ', 'ッ', 'ツ', 'ヅ', 'テ', 'デ', 'ト', 'ド', 'ナ', 'ニ', 'ヌ', 'ネ', 'ノ', 'ハ', 'バ', 'パ', 'ヒ', 'ビ', 'ピ', 'フ', 'ブ', 'プ', 'ヘ', 'ベ', 'ペ', 'ホ', 'ボ', 'ポ', 'マ', 'ミ', 'ム', 'メ', 'モ', 'ャ', 'ヤ', 'ュ', 'ユ', 'ョ', 'ヨ', 'ラ', 'リ', 'ル', 'レ', 'ロ', 'ヮ', 'ワ', 'ヰ', 'ヱ', 'ヲ', 'ン', 'ヴ', 'ヵ', 'ヶ', 'ヽ', 'ヾ'}
 
-    # TODO question: correct way to represent long vowels on the IPA front? it's attractive to just literally write out say /kaa/ for 'カァ' since it involves no lookahead, unlike /ka:/. Perhaps this will ultimately depend on how we represent length in the feature vector: whether it gets its own dimension.
     # kana_to_ipa = {
     #     'ァ' : 'a', 'ア' : 'a',
     #     'ィ' : 'i', 'イ' : 'i',
@@ -67,8 +68,6 @@ class Transcriber():
     #     'ヾ' : '', # repeats preceding syllable and voices it
     #     'ー' : 'ː', # makes the preceding vowel long. Loanwords more often use this, the 'chōonpu', than native words, which simply write the vowel.
     # }
-
-    # NOTE to self: the above copy paste took a ridiculously long time and revealed to me that I should probably investigate another way of sourcing pronunciations of Japanese words rather than rely on the kana entries: there are some relatively complicated rules changing pronunciation as kana combine. They aren't so bad that you can't approximate them well with a one-char lookahead substitution, but given that there are some kana that can vary in their reading, one should consider finding other ways of transcribing.
 
     def katakana_to_ipa(self, word: str) -> str:
         '''
@@ -316,17 +315,15 @@ class Transcriber():
 
         return polished
 
-    def convert_kana(self, kana: str) -> List[int]:
-        '''Converts all kana but -n, since that undergoes place assimilation'''
+    def IPA_to_vector(self, word: str):
+        '''Converts a string of IPA characters to their feature vectors'''
+        ft = panphon.FeatureTable()
+        return ft.word_fts(word)
 
-        # idea: create a dict like the kana_to_ipa dict above that simply transcribes each kana naively, then goes through and repairs everything to look like real Japanese.
-        # I mean, you were already going to do something like this given the existence of Japanese -n and the "geminating" kana
-        # this shouldn't be too bad, the only real rules you have to handle are the palatalization small kana, nasal assimilation, and investigating whether dzi really is intervocalically modulated or not
-        return kana_to_ipa[kana]
 
     def convert_word(self, word: str) -> List[int]:
         pass
 
 # if __name__ == '__main__':
 #     t = Transcriber()
-#     t.katakana_to_ipa()
+#     print(t.katakana_to_ipa('■') == '')
