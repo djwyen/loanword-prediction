@@ -11,6 +11,9 @@ from data_processing import transcriber
 # path to the short BCCWJ word frequency list
 PATH_TO_TSV = "data/BCCWJ/BCCWJ_frequencylist_suw_ver1_0.tsv"
 
+# path to the new, processed wordlist I am building
+PATH_TO_OUTPUT_CSV = "data/BCCWJ/pared_BCCWJ.csv"
+
 # we are interested in these particular properties:
 #   lForm (index 1): a katakana transcription of the given word
 #   lemma (index 2): the Japanese written form of the word, in kanji/hiragana/katakana
@@ -59,19 +62,54 @@ def main():
         # good, after applying the core frequency > 0 requirement we reproduce Takashi's counts (at least for SJ and foreign, which he discloses):
         # 9893 Yamato, 13373 Sino-Japanese, 4421 foreign
 
-        t = transcriber.Transcriber()
-        random_indices = {928, 123, 515, 209, 508, 40, 93, 320, 724, 540}
-        for i in range(1000):
-            x = next(reader)
-            if i in random_indices:
-                ipa = ''
-                try:
-                    ipa = t.katakana_to_ipa(x[1])
-                except:
-                    pass
-                print(x[1], x[2], ipa)
-                
+        with open(PATH_TO_OUTPUT_CSV, 'w+') as f2:
+            writer = csv.writer(f2)
+            t = transcriber.Transcriber()
+            writer.writerow(['word', 'kana', 'ipa', 'origin'])
+            for entry in reader:
+                core_freq = entry[prop_to_index['core_frequency']]
+                pos = entry[prop_to_index['pos']]
+                kana = entry[1]
+                word = entry[2]
+                orig = entry[5]
+
+                if core_freq != '' and int(core_freq) > 0:
+                    if PARTICLE in pos or ONOMATOPOEIA in pos:
+                        pass
+                    else:
+                        try:
+                            ipa = t.katakana_to_ipa(kana)
+                            if ipa != "":
+                                writer.writerow([word, kana, ipa, orig])
+                        except:
+                            pass
+
+        # t = transcriber.Transcriber()
+        # for entry in reader:
+        #     core_freq = entry[prop_to_index['core_frequency']]
+        #     pos = entry[prop_to_index['pos']]
             
+        #     if core_freq != '' and int(core_freq) > 0:
+        #         try:
+        #             ipa = t.katakana_to_ipa(entry[1])
+        #             if PARTICLE in pos:
+        #                 print(pos, entry[1], entry[2], ipa)
+        #         except Exception as e:
+        #             print(e, entry[1], entry[2], pos)
+        #             pass
+        # random_indices = {928, 123, 515, 209, 508, 140, 693, 320, 724, 540}
+        # for i in range(1000):
+        #     x = next(reader)
+        #     # print(x[1], x[2], t.katakana_to_ipa(x[1]))
+        #     if i in random_indices:
+        #         try:
+        #             ipa = t.katakana_to_ipa(x[1])
+        #             segs = t.IPA_to_vector(ipa)
+        #             print(x[1], x[2], ipa)
+        #             print(segs)
+        #         except Exception as e:
+        #             print(e)
+
 
 if __name__ == '__main__':
     main()
