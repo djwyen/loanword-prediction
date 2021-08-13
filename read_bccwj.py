@@ -26,6 +26,9 @@ PATH_TO_OUTPUT_CSV = "data/BCCWJ/pared_BCCWJ.csv"
 YAMATO = '和'
 SINO = '漢'
 FOREIGN = '外'
+MIXED = '混'
+PROPER_NAME = '固'
+SYMBOLS = '記号'
 
 # the relevant parts-of-speech for certain kinds of words one may want to exclude
 PARTICLE = '助詞'
