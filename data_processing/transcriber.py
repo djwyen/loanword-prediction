@@ -6,71 +6,18 @@ import panphon
 # TODO probably we don't need a transcriber class? but it is nice to have the names here isolated, so consider it.
 
 class Transcriber():
-    '''
+    """
     A class to wrap dictionaries for converting Japanese words between scripts:
     - Kana to IPA
     - Kana to Romaji
     - IPA to feature vectors
     Both hiragana and katakana are supported
-    '''
+    """
 
     katakana = {'ァ', 'ア', 'ィ', 'イ', 'ゥ', 'ウ', 'ェ', 'エ', 'ォ', 'オ', 'カ', 'ガ', 'キ', 'ギ', 'ク', 'グ', 'ケ', 'ゲ', 'コ', 'ゴ', 'サ', 'ザ', 'シ', 'ジ', 'ス', 'ズ', 'セ', 'ゼ', 'ソ', 'ゾ', 'タ', 'ダ', 'チ', 'ヂ', 'ッ', 'ツ', 'ヅ', 'テ', 'デ', 'ト', 'ド', 'ナ', 'ニ', 'ヌ', 'ネ', 'ノ', 'ハ', 'バ', 'パ', 'ヒ', 'ビ', 'ピ', 'フ', 'ブ', 'プ', 'ヘ', 'ベ', 'ペ', 'ホ', 'ボ', 'ポ', 'マ', 'ミ', 'ム', 'メ', 'モ', 'ャ', 'ヤ', 'ュ', 'ユ', 'ョ', 'ヨ', 'ラ', 'リ', 'ル', 'レ', 'ロ', 'ヮ', 'ワ', 'ヰ', 'ヱ', 'ヲ', 'ン', 'ヴ', 'ヵ', 'ヶ', 'ヽ', 'ヾ'}
 
-    # kana_to_ipa = {
-    #     'ァ' : 'a', 'ア' : 'a',
-    #     'ィ' : 'i', 'イ' : 'i',
-    #     'ゥ' : 'ɯ', 'ウ' : 'ɯ', 
-    #     'ェ' : 'e', 'エ' : 'e', 
-    #     'ォ' : 'o', 'オ' : 'o', 
-        
-    #     'カ' : 'ka', 'ガ' : 'ɡa', # be careful! IPA 'ɡ' is NOT the same as the g you type on your keyboard
-    #     'キ' : 'ki', 'ギ' : 'ɡi',
-    #     'ク' : 'kɯ', 'グ' : 'ɡɯ',
-    #     'ケ' : 'ke', 'ゲ' : 'ɡe',
-    #     'コ' : 'ko', 'ゴ' : 'ɡo',    
-        
-    #     'サ' : 'sa', 'ザ' : 'za',
-    #     'シ' : 'ɕi', 'ジ' : '(d)ʑi', # address this, it seems the d is dropped intervocalically (but retained otherwise, ie at beginning of words or after a syllable closed by -n)
-    #     'ス' : 'sɯ', 'ズ' : '(d)zɯ', # same as with dzi above
-    #     'セ' : 'se', 'ゼ' : 'ze',
-    #     'ソ' : 'so', 'ゾ' : 'zo',
-          
-    #     'タ' : 'ta', 'ダ' : 'da',
-    #     'チ' : 't͡ɕi', 'ヂ' : '(d)ʑi', # this is rarely used, consider dropping it
-    #     'ッ' : 'Q', # this precedes a geminate consonant
-    #     'ツ' : 't͡sɯ', 'ヅ' : '(d)zɯ', # as above, this is rarely used
-    #     'テ' : 'te', 'デ' : 'de',
-    #     'ト' : 'to', 'ド' : 'do',
-        
-    #     'ナ' : 'na', 'ニ' : 'ɲi', 'ヌ' : 'nɯ', 'ネ' : 'ne', 'ノ' : 'no',
-        
-    #     'ハ' : 'ha', 'バ' : 'ba', 'パ' : 'pa',
-    #     'ヒ' : 'çi', 'ビ' : 'bi', 'ピ' : 'pi',
-    #     'フ' : 'ɸɯ', 'ブ' : 'bɯ', 'プ' : 'pɯ',
-    #     'ヘ' : 'he', 'ベ' : 'be', 'ペ' : 'pe',
-    #     'ホ' : 'ho', 'ボ' : 'bo', 'ポ' : 'po',
-
-    #     'マ' : 'ma', 'ミ' : 'mi', 'ム' : 'mɯ', 'メ' : 'me', 'モ' : 'mo',
-    #     'ャ' : 'ʲa', 'ュ' : 'ʲɯ', 'ョ' : 'ʲo', # these combine to palatalize preceding kana, but there are some rules that apply. The palatalization is neutralized when the initial consonant is a fricative or affricate. Consider encoding this in a different way?
-    #     'ヤ' : 'ja', 'ユ' : 'jɯ', 'ヨ' : 'jo',
-        
-    #     'ラ' : 'ɾa', 'リ' : 'ɾi', 'ル' : 'ɾɯ', 'レ' : 'ɾe', 'ロ' : 'ɾo',
-    #     'ヮ' : '', # this is obsolete, Japanese used to have rounded syllables but those have lost their rounding
-    #     'ワ' : 'ɰa', 
-    #     'ヰ' : 'i', # historically [wi] but this has changed, and the kana is largely obsolete
-    #     'ヱ' : 'e', # same as with ヰ, this used to be [we]
-    #     'ヲ' : 'o', # like the above but less obsolete, sometimes used as a particle
-    #     'ン' : 'ɴ', # encode the place assimilation to [n m ŋ] somehow? and the changes between [ɴ ɰ̃]
-    #     'ヴ' : 'bɯ', # sometimes [vu], only in loanwords
-    #     'ヵ' : 'ka', # only used as a counter word
-    #     'ヶ' : '', # can be ka ga and ko depending on context
-    #     'ヽ' : '', # iteration mark, equivalent to 々. Repeats preceding syllable
-    #     'ヾ' : '', # repeats preceding syllable and voices it
-    #     'ー' : 'ː', # makes the preceding vowel long. Loanwords more often use this, the 'chōonpu', than native words, which simply write the vowel.
-    # }
-
     def katakana_to_ipa(self, word: str) -> str:
-        '''
+        """
         Converts a word or series of words in katakana to its IPA equivalent.
         
         The transcription is pretty broad, I'm not including things like the lip rounding on [ɯ] and the like.
@@ -88,8 +35,7 @@ class Transcriber():
         assert statements, and it's much clearer what's going on.
         I feel like this version was made somewhat messy in trying to let certain onomatopoeia through, and I fear
         that it has possibly made other transcriptions incorrect.
-        '''
-
+        """
         katakana_to_intermediate = {
             'ァ' : 'a', 'ア' : 'a',
             'ィ' : 'i', 'イ' : 'i',
@@ -323,7 +269,3 @@ class Transcriber():
 
     def convert_word(self, word: str) -> List[int]:
         pass
-
-# if __name__ == '__main__':
-#     t = Transcriber()
-#     print(t.katakana_to_ipa('■') == '')
