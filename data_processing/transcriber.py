@@ -4,6 +4,8 @@ from data_processing.data_errors import UnsupportedKanaError
 import panphon
 
 # TODO probably we don't need a transcriber class? but it is nice to have the names here isolated, so consider it.
+# TODO use ./kana_to_ipa.csv to load up the sound correspondence and build `katakana_to_intermediate`
+#      instead of storing it all hardcoded here, which feels like bad practice
 
 class Transcriber():
     """
