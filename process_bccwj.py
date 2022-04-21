@@ -15,7 +15,11 @@ import os
 import csv
 from data_processing import transcriber
 
+RANDOM_SEED = 888
+FRAC_TEST = 0.1
+
 COUNT_ETYMOLOGIES = False # TODO eventually I will make this a flag for the script
+PRECISE_TRANSCRIPTION = True # TODO pass this to the transcriber to make it more/less precise
 
 # path to the short BCCWJ word frequency list
 PATH_TO_UNPROCESSED_TSV = "data/BCCWJ/BCCWJ_frequencylist_suw_ver1_0.tsv"
@@ -44,6 +48,10 @@ PARTICLE = '助詞'
 ONOMATOPOEIA = '感動詞'
 
 def main():
+    pare_bccwj()
+    split_pared_bccwj(RANDOM_SEED, FRAC_TEST)
+
+def pare_bccwj():
     with open(PATH_TO_UNPROCESSED_TSV) as f:
         reader = csv.reader(f, delimiter='\t')
 
@@ -122,6 +130,14 @@ def main():
             # that fail to be converted to IPA; manually inspecting reveals these words appear
             # to not have rendered correctly and appear just as boxes: ■
 
+
+def split_pared_bccwj(seed, frac):
+    """
+    Splits the pared bccwj data into a test set and a training set such that `f` in [0, 1]
+    of the data becomes test and the rest is kept as training.
+    `seed` is the random seed to use for reproducibility.
+    """
+    pass
 
 if __name__ == '__main__':
     main()
