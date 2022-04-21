@@ -1,7 +1,9 @@
 from typing import List, Mapping
 from data_processing.data_errors import UnsupportedKanaError
 
+import numpy as np
 import panphon
+from panphon.segment import Segment
 
 # TODO probably we don't need a transcriber class? but it is nice to have the names here isolated, so consider it.
 # TODO use ./kana_to_ipa.csv to load up the sound correspondence and build `katakana_to_intermediate`
@@ -263,11 +265,16 @@ class Transcriber():
 
         return polished
 
-    def IPA_to_vector(self, word: str):
-        '''Converts a string of IPA characters to their feature vectors'''
+    def IPA_to_panphon_word(self, word: str) -> Segment:
+        """
+        Converts a string of IPA characters to their feature vectors.
+        """
         ft = panphon.FeatureTable()
         return ft.word_fts(word)
 
-
-    def convert_word(self, word: str) -> List[int]:
-        pass
+    def IPA_to_numpy_array(self, word: str) -> List[List[int]]:
+        """
+        Converts a word in IPA to a numpy feature array
+        """
+        ft = panphon.FeatureTable()
+        return ft.word_to_vector_list(word, numeric=True) # TODO investigate role of "normalization"?
