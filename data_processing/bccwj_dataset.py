@@ -7,7 +7,6 @@ Following this: (https://pytorch.org/tutorials/beginner/basics/data_tutorial.htm
 import os
 import csv
 import pandas as pd
-from torchvision.io import read_image
 from torch.utils.data import Dataset, DataLoader
 from data_processing.transcriber import Transcriber
 from .word import Word
