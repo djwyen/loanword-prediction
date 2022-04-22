@@ -265,14 +265,14 @@ class Transcriber():
 
         return polished
 
-    def IPA_to_panphon_word(self, word: str) -> Segment:
+    def ipa_to_panphon_word(self, word: str) -> Segment:
         """
         Converts a string of IPA characters to their feature vectors.
         """
         ft = panphon.FeatureTable()
         return ft.word_fts(word)
 
-    def IPA_to_numpy_array(self, word: str) -> List[List[int]]:
+    def ipa_to_numpy_array(self, word: str) -> List[List[int]]:
         """
         Converts a word in IPA to a numpy feature array
         """

@@ -28,5 +28,5 @@ class BCCWJDataset(Dataset):
         kana = self.vocab_df.at(idx, 'kana')
         ipa = self.vocab_df.at(idx, 'ipa')
         origin = self.vocab_df.at(idx, 'origin')
-        segments = self.t.IPA_to_numpy_array(ipa)
+        segments = self.t.ipa_to_numpy_array(ipa)
         return Word(idx, word, kana, origin, ipa, segments)

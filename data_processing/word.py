@@ -16,5 +16,5 @@ class Word():
     def __str__(self):
         return f'{self.idx}: {self.word}, {self.kana}, {self.ipa}'
     
-    def prettySegs(self):
+    def pretty_segs(self):
         return zip(self.ipa, self.segments)
