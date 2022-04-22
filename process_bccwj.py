@@ -13,7 +13,8 @@ This website has some information on labels but it seems less relevant than the 
 
 import os
 import csv
-from data_processing import transcriber
+from data_processing.transcriber import Transcriber
+import torch
 
 RANDOM_SEED = 888
 FRAC_TEST = 0.1
@@ -84,7 +85,7 @@ def pare_bccwj():
             # 9893 Yamato, 13373 Sino-Japanese, 4421 foreign
 
         with open(PATH_TO_OUTPUT_CSV, 'w+') as f2:
-            t = transcriber.Transcriber()
+            t = Transcriber()
             # to count the etymological distribution of the recorded words
             yamato_count = 0
             sino_count = 0

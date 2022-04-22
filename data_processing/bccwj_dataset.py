@@ -9,7 +9,7 @@ import csv
 import pandas as pd
 from torchvision.io import read_image
 from torch.utils.data import Dataset, DataLoader
-from data_processing import transcriber
+from data_processing.transcriber import Transcriber
 from .word import Word
 
 # path to the pared BCCWJ dataset that is created by `process_bccwj.py`
@@ -18,7 +18,7 @@ PATH_TO_PROCESSED_CSV = "data/BCCWJ/pared_BCCWJ.csv"
 class BCCWJDataset(Dataset):
     def __init__(self):
         self.vocab_df = pd.read_csv(PATH_TO_PROCESSED_CSV)
-        self.t = transcriber.Transcriber()
+        self.t = Transcriber()
 
     def __len__(self):
         return self.vocab_df.shape[0]
