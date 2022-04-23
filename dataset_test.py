@@ -7,6 +7,31 @@ from data_processing.transcriber import Transcriber
 PATH_TO_OUTPUT_CSV = "data/BCCWJ/pared_BCCWJ.csv"
 OUTPUT_CSV_LENGTH = 36396 # as of last generation
 
+
+class TestTranscriber(unittest.TestCase):
+    # partition:
+    # want to cover:
+    #   glide substitution
+    #   geminate consonant realization
+    #   long vowels
+    #   syllable final nasal place assimilation
+    #   affricate joining
+    #   yotsugana realization word-initially and intervocalically
+    def setUp(self):
+        self.t = Transcriber()
+    
+    # def test_kana_to_intermediate(self):
+    #     pass
+
+    def test_katakana_to_ipa(self):
+        self.assertEqual(self.t.katakana_to_ipa('オトナ'), 'otona')
+        self.assertEqual(self.t.katakana_to_ipa('インターネット'), 'intaːnetto') # tests geminate consonant
+        self.assertEqual(self.t.katakana_to_ipa('アズキイリ'), 'azɯkiːɾi') # tests yotsugana intervocalically, long vowels
+        self.assertEqual(self.t.katakana_to_ipa('タニン'), 'taɲiɴ') # tests nasal place assimilation
+        self.assertEqual(self.t.katakana_to_ipa('キョウシツ'), 'kʲoːɕit͡sɯ') # tests glide substitution, affricate joining
+        self.assertEqual(self.t.katakana_to_ipa('ジコウ'), 'd͡ʑikoː') # tests word initial yotsugana
+        self.assertEqual(self.t.katakana_to_ipa('コンバンハ'), 'kombaũ͍ɰa')
+
 class TestWord(unittest.TestCase):
     def setUp(self):
         ipa = 'sɯika'
