@@ -5,6 +5,9 @@ its sublexical origin, its transcription in IPA, and the panphon segments it ind
 """
 
 class Word():
+    # TODO add another form of the segments besides just the vectors
+    #      and in particular make it possible to access things by particular features like voicing or whatever
+    #      the upshot is, read the panphon documentation...
     def __init__(self, idx, word, kana, origin, ipa, segments):
         self.idx = idx # note that a word's ID will not necessarily be its key in the BCCWJDataset due to shuffling
         self.word = word
