@@ -23,9 +23,9 @@ class BCCWJDataset(Dataset):
         return self.vocab_df.shape[0]
 
     def __getitem__(self, idx):
-        word = self.vocab_df.at(idx, 'word')
-        kana = self.vocab_df.at(idx, 'kana')
-        ipa = self.vocab_df.at(idx, 'ipa')
-        origin = self.vocab_df.at(idx, 'origin')
+        word = self.vocab_df.at[idx, 'word']
+        kana = self.vocab_df.at[idx, 'kana']
+        ipa = self.vocab_df.at[idx, 'ipa']
+        origin = self.vocab_df.at[idx, 'origin']
         segments = self.t.ipa_to_numpy_array(ipa)
         return Word(idx, word, kana, origin, ipa, segments)
