@@ -1,3 +1,4 @@
+import csv
 from typing import List, Mapping
 from data_processing.data_errors import UnsupportedKanaError
 
@@ -5,9 +6,7 @@ import numpy as np
 import panphon
 from panphon.segment import Segment
 
-# TODO probably we don't need a transcriber class? but it is nice to have the names here isolated, so consider it.
-# TODO use ./kana_to_ipa.csv to load up the sound correspondence and build `katakana_to_intermediate`
-#      instead of storing it all hardcoded here, which feels like bad practice
+KATAKANA_TO_IPA_CSV = 'kana_to_ipa.csv'
 
 class Transcriber():
     """
@@ -17,8 +16,14 @@ class Transcriber():
     - IPA to feature vectors
     Both hiragana and katakana are supported
     """
-
-    katakana = {'ァ', 'ア', 'ィ', 'イ', 'ゥ', 'ウ', 'ェ', 'エ', 'ォ', 'オ', 'カ', 'ガ', 'キ', 'ギ', 'ク', 'グ', 'ケ', 'ゲ', 'コ', 'ゴ', 'サ', 'ザ', 'シ', 'ジ', 'ス', 'ズ', 'セ', 'ゼ', 'ソ', 'ゾ', 'タ', 'ダ', 'チ', 'ヂ', 'ッ', 'ツ', 'ヅ', 'テ', 'デ', 'ト', 'ド', 'ナ', 'ニ', 'ヌ', 'ネ', 'ノ', 'ハ', 'バ', 'パ', 'ヒ', 'ビ', 'ピ', 'フ', 'ブ', 'プ', 'ヘ', 'ベ', 'ペ', 'ホ', 'ボ', 'ポ', 'マ', 'ミ', 'ム', 'メ', 'モ', 'ャ', 'ヤ', 'ュ', 'ユ', 'ョ', 'ヨ', 'ラ', 'リ', 'ル', 'レ', 'ロ', 'ヮ', 'ワ', 'ヰ', 'ヱ', 'ヲ', 'ン', 'ヴ', 'ヵ', 'ヶ', 'ヽ', 'ヾ'}
+    def __init__(self):
+        self.katakana_to_intermediate = {}
+        with open(KATAKANA_TO_IPA_CSV) as f:
+            reader = csv.reader(f)
+            header = next(reader)
+            for line in reader:
+                kana, ipa = line
+                self.katakana_to_intermediate[kana] = ipa
 
     def katakana_to_ipa(self, word: str) -> str:
         """
@@ -32,7 +37,6 @@ class Transcriber():
         actually pronounced.
         In the final step, we conver the remaining non-IPA segments to proper IPA.
 
-        TODO convert to regex for speed
         TODO this newest version admits onomatopoeia, which use katakana in really strange ways, and which may represent
         a stratum of Japanese that abides by different phonotactics. Should we exclude them, or at least create two
         versions of this function? For the one that abides by standard phonotactics, we can include pointed
@@ -40,61 +44,6 @@ class Transcriber():
         I feel like this version was made somewhat messy in trying to let certain onomatopoeia through, and I fear
         that it has possibly made other transcriptions incorrect.
         """
-        katakana_to_intermediate = {
-            'ァ' : 'a', 'ア' : 'a',
-            'ィ' : 'i', 'イ' : 'i',
-            'ゥ' : 'ɯ', 'ウ' : 'ɯ', 
-            'ェ' : 'e', 'エ' : 'e', 
-            'ォ' : 'o', 'オ' : 'o', 
-            
-            'カ' : 'ka', 'ガ' : 'ɡa', # be careful! IPA 'ɡ' is NOT the same as the g you type on your keyboard
-            'キ' : 'ki', 'ギ' : 'ɡi',
-            'ク' : 'kɯ', 'グ' : 'ɡɯ',
-            'ケ' : 'ke', 'ゲ' : 'ɡe',
-            'コ' : 'ko', 'ゴ' : 'ɡo',
-
-            'サ' : 'sa', 'ザ' : 'za',
-            'シ' : 'ɕi', 'ジ' : 'Dʑi', # making the executive decision to transcribe the initial consonant of the
-            'ス' : 'sɯ', 'ズ' : 'Dzɯ', # yotsugana as a fricative intervocalically and an affricate
-            'セ' : 'se', 'ゼ' : 'ze', # otherwise (beginning of words, or after closed syllables)
-            'ソ' : 'so', 'ゾ' : 'zo', # I used wiktionary on various words like 杏子, 小豆, to help support this interpretation.
-            # also see https://en.wikipedia.org/wiki/Hiragana which claims "In many accents, the j and z sounds are pronounced as affricates at the beginning of utterances and fricatives in the middle of words". Post-n is the only ambiguous case but wiktionary "anzu" above suggests it is also an affricate there.
-            # anyway, more relevantly, I use capital D for a possibly deleted d.
-
-            'タ' : 'ta', 'ダ' : 'da',
-            'チ' : 'tɕi', 'ヂ' : 'Dʑi', # encoding 'ts' without the tie since it messes up things; will add it to
-            'ツ' : 'tsɯ', 'ヅ' : 'Dzɯ', # ts/dz later
-            'テ' : 'te', 'デ' : 'de',
-            'ト' : 'to', 'ド' : 'do',
-            'ッ' : 'Q', # this precedes a geminate consonant
-
-            'ナ' : 'na', 'ニ' : 'ɲi', 'ヌ' : 'nɯ', 'ネ' : 'ne', 'ノ' : 'no',
-
-            'ハ' : 'ha', 'バ' : 'ba', 'パ' : 'pa',
-            'ヒ' : 'çi', 'ビ' : 'bi', 'ピ' : 'pi',
-            'フ' : 'ɸɯ', 'ブ' : 'bɯ', 'プ' : 'pɯ',
-            'ヘ' : 'he', 'ベ' : 'be', 'ペ' : 'pe',
-            'ホ' : 'ho', 'ボ' : 'bo', 'ポ' : 'po',
-
-            'マ' : 'ma', 'ミ' : 'mi', 'ム' : 'mɯ', 'メ' : 'me', 'モ' : 'mo',
-            'ャ' : 'Ja', 'ュ' : 'Jɯ', 'ョ' : 'Jo', # using capital J for a glide that is possibly either deleted or assimilated to the preceding consonant
-            'ヤ' : 'ja', 'ユ' : 'jɯ', 'ヨ' : 'jo',
-
-            'ラ' : 'ɾa', 'リ' : 'ɾi', 'ル' : 'ɾɯ', 'レ' : 'ɾe', 'ロ' : 'ɾo',
-            # 'ヮ' : '', # this is obsolete, don't think it will be encountered.
-            'ワ' : 'ɰa',
-            'ヰ' : 'i',
-            'ヱ' : 'e',
-            'ヲ' : 'o',
-            'ン' : 'N', # encoding nasal as N; place assimilation and the like to come later
-            'ヴ' : 'bɯ',
-            # 'ヵ' : '', # only used as a counter word, not encoding it
-            # 'ヶ' : '', # can be ka ga and ko depending on context; not encoding it
-            'ヽ' : 'ヽ', # iteration mark, equivalent to 々. Repeats preceding syllable
-            'ヾ' : 'ヾ', # repeats preceding syllable and voices it
-            'ー' : 'R', # encoding long vowel as R
-        }
-        
         # exceptions: these particular Japanese words are using は was a particle instead of a kana,
         # so it's pronounced 'wa' instead of 'ha' there
         exceptions = {
@@ -111,12 +60,12 @@ class Transcriber():
         # first, we use the above dictionary to convert the kana to our intermediate string:
         intermediate = u''
         for i, kana in enumerate(word):
-            if kana not in katakana_to_intermediate:
+            if kana not in self.katakana_to_intermediate:
                 raise UnsupportedKanaError(kana)
             
             if kana == 'ヽ':
                 pre = word[i-1]
-                intermediate += katakana_to_intermediate[pre]
+                intermediate += self.katakana_to_intermediate[pre]
             elif kana == 'ヾ':
                 # I'm too lazy to create a huge dictionary mapping each kana to its equivalent with the tenten,
                 # so I will exploit the way katakana are encoded in Unicode.
@@ -125,11 +74,11 @@ class Transcriber():
                 pre = word[i-1]
                 unicode_id = ord(pre) # already an int
                 voiced_kana = chr(unicode_id + 1)
-                intermediate += katakana_to_intermediate[voiced_kana]
+                intermediate += self.katakana_to_intermediate[voiced_kana]
             # elif kana in {'ヮ', 'ヵ', 'ヶ'}: # these kana aren't supported since they have unclear readings
             #     raise UnsupportedKanaError(kana)
             else:
-                intermediate += katakana_to_intermediate[kana]
+                intermediate += self.katakana_to_intermediate[kana]
 
         alveolars = {'n', 't', 'd', 'ɾ', 'z', 'ʑ'}
         labials = {'m', 'p', 'b'}
