@@ -35,7 +35,7 @@ class Transcriber():
                 kana, ipa = line
                 self.katakana_to_intermediate[kana] = ipa
 
-    def katakana_to_ipa(self, word: str) -> str:
+    def katakana_to_ipa(self, word_in_katakana: str) -> str:
         """
         Converts a word or series of words in katakana to its IPA equivalent.
         
@@ -66,24 +66,24 @@ class Transcriber():
         # I don't want to deal with detecting these so I will just hardcode them.
         # We're working with a particular dataset, and the Japanese language is unlikely to change soon,
         # so I think it's fine to hardcode them.
-        if word in exceptions:
-            return exceptions[word]
+        if word_in_katakana in exceptions:
+            return exceptions[word_in_katakana]
 
         # first, we use the above dictionary to convert the kana to our intermediate string:
         intermediate = u''
-        for i, kana in enumerate(word):
+        for i, kana in enumerate(word_in_katakana):
             if kana not in self.katakana_to_intermediate:
                 raise UnsupportedKanaError(kana)
             
             if kana == 'ヽ':
-                pre = word[i-1]
+                pre = word_in_katakana[i-1]
                 intermediate += self.katakana_to_intermediate[pre]
             elif kana == 'ヾ':
                 # I'm too lazy to create a huge dictionary mapping each kana to its equivalent with the tenten,
                 # so I will exploit the way katakana are encoded in Unicode.
                 # The version of a kana with dakuten has unicode ID one greater than its dakutenless counterpart,
                 # eg ord('フ') + 1 == ord('ブ')
-                pre = word[i-1]
+                pre = word_in_katakana[i-1]
                 unicode_id = ord(pre) # already an int
                 voiced_kana = chr(unicode_id + 1)
                 intermediate += self.katakana_to_intermediate[voiced_kana]
@@ -231,20 +231,20 @@ class Transcriber():
 
         return polished
 
-    def katakana_to_romaji(self, word: str) -> str:
+    def katakana_to_romaji(self, word_in_katakana: str) -> str:
         # TODO implement similar to katakana_to_ipa; create a csv with the transcription equivalents (and special chars)
         pass
 
-    def ipa_to_panphon_word(self, word: str) -> List[Segment]:
+    def ipa_to_panphon_segments(self, word_in_ipa: str) -> List[Segment]:
         """
         Converts a string of IPA characters to a list of panphon Segments.
         See the panphon documentation for properties of Segment (https://github.com/dmort27/panphon)
         """
         ft = panphon.FeatureTable()
-        assert(ft.validate_word(word))
-        return ft.word_fts(word)
+        assert(ft.validate_word(word_in_ipa))
+        return ft.word_fts(word_in_ipa)
 
-    def ipa_to_numpy_array(self, word: str) -> List[List[int]]:
+    def ipa_to_feature_vectors(self, word_in_ipa: str) -> List[List[int]]:
         """
         Converts a word in IPA to a numpy array of integers {+1,-1,0} corresponding to features.
         A given row corresponds to a segment's list of features. In that list, each index corresponds to a particular feature,
@@ -252,5 +252,5 @@ class Transcriber():
         See the panphon documentation for specifics of the ordering of the features (https://github.com/dmort27/panphon)
         """
         ft = panphon.FeatureTable()
-        assert(ft.validate_word(word))
-        return ft.word_to_vector_list(word, numeric=True) # TODO investigate role of "normalization"?
+        assert(ft.validate_word(word_in_ipa))
+        return ft.word_to_vector_list(word_in_ipa, numeric=True) # TODO investigate role of "normalization"?

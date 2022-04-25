@@ -40,8 +40,8 @@ class TestWord(unittest.TestCase):
         self._ft = panphon.FeatureTable()
         self._t = Transcriber()
         self.w = Word(7976, '西瓜', 'スイカ', '漢', ipa,
-            self._t.ipa_to_panphon_word(ipa),
-            self._t.ipa_to_numpy_array(ipa))
+            self._t.ipa_to_panphon_segments(ipa),
+            self._t.ipa_to_feature_vectors(ipa))
 
     def test_to_str(self):
         self.assertEqual(str(self.w), '7976: 西瓜, スイカ, sɯika', 'Should be ' + str(self.w))

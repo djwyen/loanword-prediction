@@ -20,13 +20,16 @@ class BCCWJDataset(Dataset):
         self._t = Transcriber()
 
     def __len__(self):
-        return self.vocab_df.shape[0]
+        return len(self.vocab_df)
 
     def __getitem__(self, idx):
         word = self.vocab_df.at[idx, 'word']
         kana = self.vocab_df.at[idx, 'kana']
         ipa = self.vocab_df.at[idx, 'ipa']
         origin = self.vocab_df.at[idx, 'origin']
-        segments = self._t.ipa_to_panphon_word(ipa)
-        feature_vectors = self._t.ipa_to_numpy_array(ipa)
+
+        # use Transcriber/panphon to create the more informative info about this word
+        segments = self._t.ipa_to_panphon_segments(ipa)
+        feature_vectors = self._t.ipa_to_feature_vectors(ipa)
+
         return Word(idx, word, kana, origin, ipa, segments, feature_vectors)
