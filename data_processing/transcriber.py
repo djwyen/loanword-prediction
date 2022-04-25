@@ -8,6 +8,13 @@ from panphon.segment import Segment
 
 KATAKANA_TO_IPA_CSV = 'kana_to_ipa.csv'
 
+# represents how strict to be with transcriptions, currently just two settings
+class TranscriptionStyle:
+    BROAD = 1
+    NARROW = 2
+
+TRANSCRIPTION_STYLE = TranscriptionStyle.BROAD # can be set via a commandline argument, eventually
+
 class Transcriber():
     """
     A class to wrap dictionaries for converting Japanese words between scripts:
@@ -16,7 +23,8 @@ class Transcriber():
     - IPA to feature vectors
     Both hiragana and katakana are supported
     """
-    def __init__(self):
+    def __init__(self, style = TranscriptionStyle.BROAD):
+        self.style = style
         self.katakana_to_intermediate = {}
         with open(KATAKANA_TO_IPA_CSV) as f:
             reader = csv.reader(f)
