@@ -235,9 +235,10 @@ class Transcriber():
         # TODO implement similar to katakana_to_ipa; create a csv with the transcription equivalents (and special chars)
         pass
 
-    def ipa_to_panphon_word(self, word: str) -> Segment:
+    def ipa_to_panphon_word(self, word: str) -> List[Segment]:
         """
-        Converts a string of IPA characters to their feature vectors.
+        Converts a string of IPA characters to a list of panphon Segments.
+        See the panphon documentation for properties of Segment (https://github.com/dmort27/panphon)
         """
         ft = panphon.FeatureTable()
         assert(ft.validate_word(word))
@@ -245,7 +246,10 @@ class Transcriber():
 
     def ipa_to_numpy_array(self, word: str) -> List[List[int]]:
         """
-        Converts a word in IPA to a numpy feature array
+        Converts a word in IPA to a numpy array of integers {+1,-1,0} corresponding to features.
+        A given row corresponds to a segment's list of features. In that list, each index corresponds to a particular feature,
+        and the value in {+1,-1,0} corresponds to the feature's value in the natural way.
+        See the panphon documentation for specifics of the ordering of the features (https://github.com/dmort27/panphon)
         """
         ft = panphon.FeatureTable()
         assert(ft.validate_word(word))
