@@ -17,11 +17,13 @@ TRANSCRIPTION_STYLE = TranscriptionStyle.BROAD # can be set via a commandline ar
 
 class Transcriber():
     """
-    A class to wrap dictionaries for converting Japanese words between scripts:
+    A class to wrap methods for converting Japanese words between scripts:
     - Kana to IPA
-    - Kana to Romaji
-    - IPA to feature vectors
-    Both hiragana and katakana are supported
+    - Kana to Romaji TODO
+    - IPA to feature vectors (via panphon)
+    - IPA to panphon Segments
+
+    Currently there is only support for Katakana, which is what BCCWJ is written in. TODO support hiragana
     """
     def __init__(self, style = TranscriptionStyle.BROAD):
         self.style = style
@@ -228,6 +230,10 @@ class Transcriber():
                 polished += char
 
         return polished
+
+    def katakana_to_romaji(self, word: str) -> str:
+        # TODO implement similar to katakana_to_ipa; create a csv with the transcription equivalents (and special chars)
+        pass
 
     def ipa_to_panphon_word(self, word: str) -> Segment:
         """
