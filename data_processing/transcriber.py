@@ -234,6 +234,7 @@ class Transcriber():
         Converts a string of IPA characters to their feature vectors.
         """
         ft = panphon.FeatureTable()
+        assert(ft.validate_word(word))
         return ft.word_fts(word)
 
     def ipa_to_numpy_array(self, word: str) -> List[List[int]]:
@@ -241,4 +242,5 @@ class Transcriber():
         Converts a word in IPA to a numpy feature array
         """
         ft = panphon.FeatureTable()
+        assert(ft.validate_word(word))
         return ft.word_to_vector_list(word, numeric=True) # TODO investigate role of "normalization"?
