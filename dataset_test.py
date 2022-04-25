@@ -30,7 +30,7 @@ class TestTranscriber(unittest.TestCase):
         self.assertEqual(self.t.katakana_to_ipa('タニン'), 'taɲiɴ') # tests nasal place assimilation
         self.assertEqual(self.t.katakana_to_ipa('キョウシツ'), 'kʲoːɕit͡sɯ') # tests glide substitution, affricate joining
         self.assertEqual(self.t.katakana_to_ipa('ジコウ'), 'd͡ʑikoː') # tests word initial yotsugana
-        self.assertEqual(self.t.katakana_to_ipa('コンバンハ'), 'kombaũ͍ɰa')
+        self.assertEqual(self.t.katakana_to_ipa('コンバンハ'), 'kombaɰ̃ɰa') # TODO this depends on how broad the transcription is
 
 class TestWord(unittest.TestCase):
     def setUp(self):
@@ -55,6 +55,7 @@ class TestDataset(unittest.TestCase):
         self.assertEqual(len(self.dataset), OUTPUT_CSV_LENGTH)
 
     def test_accesses(self):
+        # TODO these transcriptions assume a BROAD transcription; denote that somewhere
         first_access = self.dataset[0]
         # should be だ,ダ,da,和
         self.assertEqual(str(first_access), '0: だ, ダ, da')
