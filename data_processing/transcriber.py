@@ -56,9 +56,11 @@ class Transcriber():
         # so it's pronounced 'wa' instead of 'ha' there
         exceptions = {
             'コンニチハ' : 'koɲit͡ɕiɰa',
-            'コンバンハ' : 'kombaũ͍ɰa',
+            'コンバンハ' : 'kombaɰ̃ɰa',
             'コンバチハ' : 'kombat͡ɕiɰa'
         }
+        if self.style == TranscriptionStyle.NARROW:
+            exceptions['コンバンハ'] = 'kombaũ͍ɰa'
         # I don't want to deal with detecting these so I will just hardcode them.
         # We're working with a particular dataset, and the Japanese language is unlikely to change soon,
         # so I think it's fine to hardcode them.
@@ -149,7 +151,7 @@ class Transcriber():
                         if pre == 'i':
                             realized += 'I' # replace with ĩ later: but we want a one-to-one char correspondence for now
                         else:
-                            realized += 'U' # replace with ũ͍ later
+                            realized += 'U' # replace with ũ͍/ɰ̃ later
             elif seg == 'J':
                 # in Yamato/Sino-Japanese words these can only appear after the -i kana,
                 # which suggests deeper phonotactic restrictions than orthographic convention.
@@ -205,7 +207,12 @@ class Transcriber():
             elif char == 'I':
                 polished += 'ĩ'
             elif char == 'U':
-                polished += 'ũ͍' # the nasal vowels is also transcribed [ɰ̃] at times
+                if self.style == TranscriptionStyle.NARROW:
+                    polished += 'ũ͍' # the nasal vowels is also transcribed [ɰ̃] at times
+                elif self.style == TranscriptionStyle.BROAD:
+                    polished += 'ɰ̃'
+                else:
+                    polished += 'ɰ̃'
             elif char in vowels:
                 if i == 0:
                     polished += char
