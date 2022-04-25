@@ -8,7 +8,6 @@ import os
 import csv
 import pandas as pd
 from torch.utils.data import Dataset, DataLoader
-from data_processing.transcriber import Transcriber
 from .word import Word
 
 # path to the pared BCCWJ dataset that is created by `process_bccwj.py`
@@ -17,7 +16,6 @@ PATH_TO_PROCESSED_CSV = "data/BCCWJ/pared_BCCWJ.csv"
 class BCCWJDataset(Dataset):
     def __init__(self):
         self.vocab_df = pd.read_csv(PATH_TO_PROCESSED_CSV)
-        self.t = Transcriber()
 
     def __len__(self):
         return self.vocab_df.shape[0]
@@ -27,5 +25,4 @@ class BCCWJDataset(Dataset):
         kana = self.vocab_df.at[idx, 'kana']
         ipa = self.vocab_df.at[idx, 'ipa']
         origin = self.vocab_df.at[idx, 'origin']
-        segments = self.t.ipa_to_numpy_array(ipa)
-        return Word(idx, word, kana, origin, ipa, segments)
+        return Word(idx, word, kana, origin, ipa)
