@@ -220,7 +220,13 @@ class Transcriber():
                     polished += char
                 else:
                     pre = realized[i-1]
-                    if char == pre:
+                    if char == pre and polished[-1] != 'ː':
+                        # the second clause is to prevent vowels from being >2 morae in length
+                        # in words like 'ＪＡＡ, ジェーエーエー'
+                        # which should be transcribed /d͡ʑieːeːeː/, not /d͡ʑieːːːːː/
+                        # For a non-acronym example, there is '明王, ミョウオウ,mʲo' 'Wisdom King [of Buddhism]'
+                        # which should be /mʲoːoː/, not /mʲoːːː/
+                        # TODO I also wonder if this phenomenon further encourages adding syllable separators
                         polished += 'ː'
                     else:
                         # if char == 'ɯ':
