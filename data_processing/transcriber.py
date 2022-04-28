@@ -95,9 +95,9 @@ class Transcriber():
         alveolars = {'n', 't', 'd', 'ɾ', 'z', 'ʑ'}
         labials = {'m', 'p', 'b'}
         velars = {'k', 'ɡ'}
-        approxs = {'j', 'h', 'ç', 'ɸ', 's', 'ɕ', 'ɰ'} # not quite the right name for this class, but it's not obvious what the common thread is. Good enough for me.
-        fricatives = {'z', 'ʑ', 's', 'ɕ', 'h', 'ç', 'ɸ'}
-        h_frics = {'h', 'ç', 'ɸ'}
+        approxs = {'j', 'h', 'ç', 'ɸ', 's', 'ɕ', 'ɰ'} # not quite the right name for this class, but it's not obvious what the common thread is. Good enough for me.
+        fricatives = {'z', 'ʑ', 's', 'ɕ', 'h', 'ç', 'ɸ'}
+        h_frics = {'h', 'ç', 'ɸ'}
         vowels = {'a', 'i', 'ɯ', 'e', 'o'}
         nasals = {'n', 'm', 'ŋ', 'I', 'U', 'ɴ'}
 
