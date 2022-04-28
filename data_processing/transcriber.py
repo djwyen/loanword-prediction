@@ -151,7 +151,7 @@ class Transcriber():
                         pre = realized[-1]
                         # assert pre in vowels
                         if pre == 'i':
-                            realized += 'I' # replace with ĩ later: but we want a one-to-one char correspondence for now
+                            realized += 'I' # replace with ĩ later: but we want a one-to-one char correspondence for now
                         else:
                             realized += 'U' # replace with ũ͍/ɰ̃ later
             elif seg == 'J':
@@ -207,7 +207,7 @@ class Transcriber():
                 else:
                     polished += 'd'
             elif char == 'I':
-                polished += 'ĩ'
+                polished += 'ĩ'
             elif char == 'U':
                 if self.style == TranscriptionStyle.NARROW:
                     polished += 'ũ͍' # the nasal vowels is also transcribed [ɰ̃] at times

@@ -4,6 +4,8 @@ This document compiles some comments on the kana transcription choices I made th
 
 - Apr 27, 2022: I encountered another bug on this pattern, and it's worse since the characters render identically. IPA 'ç' (or at least, the one panphon recognizes) is distinct from non-IPA 'ç'. In particular the former is actually a digraph in unicode. I will consider opening tickets on Panphon about this and 'g' above...
 
+- Apr 27, 2022: The same bug but with IPA 'ĩ' which is distinct from 'ĩ'. I've run into several problems of this sort copy-pasting from wikipedia...
+
 - I make the executive decision to transcribe the initial consonant of the yotsugana as a fricative intervocalically and an affricate otherwise (beginning of words or after closed syllables). I used wiktionary on various words like 杏子, 小豆 to help support this interpretation. Also see https://en.wikipedia.org/wiki/Hiragana which claims "In many accents, the j and z sounds are pronounced as affricates at the beginning of utterances and fricatives in the middle of words". Post-n is the only ambiguous case but wiktionary "anzu" above suggests it is also an affricate there.
 
 - I encode /ts/ without the tie since it messes up things; will add it to ts/dz later
