@@ -40,10 +40,10 @@ class BCCWJDataset(Dataset):
         origin = self.vocab_df.at[true_idx, 'origin']
 
         # use Transcriber/panphon to create the more informative info about this word
-        segments = self._t.ipa_to_panphon_segments(ipa)
+        # segments = self._t.ipa_to_panphon_segments(ipa)
         feature_vectors = self._t.ipa_to_feature_vectors(ipa)
 
-        return Word(true_idx, word, kana, origin, ipa, segments, feature_vectors)
+        return feature_vectors, Word(true_idx, word, kana, origin, ipa)
 
 
 def split_pared_bccwj(seed, frac):
