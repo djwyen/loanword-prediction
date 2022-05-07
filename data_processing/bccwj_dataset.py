@@ -16,21 +16,46 @@ from .word import Word
 # path to the pared BCCWJ dataset that is created by `process_bccwj.py`
 PATH_TO_PROCESSED_CSV = "data/BCCWJ/pared_BCCWJ.csv"
 
+NUM_OF_PANPHON_FEATURES = 24 # there are 24 features output by panphon by default transcription
+PAD_FV = [0] * NUM_OF_PANPHON_FEATURES
+
 # TODO could refactor to transcribe from kana to ipa in the Dataset, which would allow passing transcription broadness as a flag to the constructor for the Dataset. Pared_BCCWJ would just be to pick out the relevant words, and not to pretranscribe them.
 
+def length_of_ipa(ipa):
+    '''
+    Quick helper function to compute the length of an ipa string by removing extraneous segments
+    '''
+    return len(ipa) - ipa.count('ː') - ipa.count('ʲ') - ipa.count('ç') - (2*ipa.count('d͡ʑ')) - (2*ipa.count('t͡ɕ')) - (2*ipa.count('t͡s')) - ipa.count('ɰ̃') - ipa.count('ĩ')
+
+
 class BCCWJDataset(Dataset):
-    def __init__(self, indices=None):
+    def __init__(self, indices=None, max_seq_len=None):
         self.vocab_df = pd.read_csv(PATH_TO_PROCESSED_CSV)
         self._t = Transcriber()
         if indices is not None:
             self.indices = indices # the set of indices this Dataset covers
         else:
             self.indices = range(len(self.vocab_df))
+        
+        if max_seq_len is not None:
+            self.max_seq_len = max_seq_len
+        else:
+            self.max_seq_len = 0
+            # find the longest seq in this dataset
+            for i, row in self.vocab_df.iterrows():
+                ipa = row['ipa']
+                length = length_of_ipa(ipa)
+                if length > self.max_seq_len:
+                    self.max_seq_len = length
 
     def __len__(self):
         return len(self.indices)
 
     def __getitem__(self, idx):
+        '''
+        Returns items as Python lists, padded to be of the max seq len
+        TODO look at having a padded end of sequence token?
+        '''
         # assert index is less than length?
         true_idx = self.indices[idx] # the index of the item in pared_BCCWJ we are retrieving
 
@@ -42,6 +67,10 @@ class BCCWJDataset(Dataset):
         # use Transcriber/panphon to create the more informative info about this word
         # segments = self._t.ipa_to_panphon_segments(ipa)
         feature_vectors = self._t.ipa_to_feature_vectors(ipa)
+
+        # pad sequence with dead all-zeroes segments up to the max seq len
+        length_diff = self.max_seq_len - length_of_ipa(ipa)
+        feature_vectors += PAD_FV * length_diff
 
         return feature_vectors, Word(true_idx, word, kana, origin, ipa)
 
