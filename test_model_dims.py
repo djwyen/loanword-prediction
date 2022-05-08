@@ -55,7 +55,7 @@ class TestModelDims(unittest.TestCase):
         decoder_output = decoder(encoder_hidden_state)
         self.assertEqual(decoder_output.shape, (BATCH_SIZE, MAX_SEQ_LEN_WITH_STOP, NUM_PANPHON_FEATURES))
 
-        autoencoder_output = autoencoder(some_dataloader_input)
+        _encoded, autoencoder_output = autoencoder(some_dataloader_input)
         self.assertEqual(autoencoder_output.shape, (BATCH_SIZE, MAX_SEQ_LEN_WITH_STOP, NUM_PANPHON_FEATURES))
 
 
