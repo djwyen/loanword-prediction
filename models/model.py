@@ -59,6 +59,19 @@ class Encoder(nn.Module):
         x = torch.cat([fwd_final_h_n, bwd_final_h_n], dim=1) # (N, 2H_out)
         return x
 
+    def encode(self, x):
+        # lets one use the model as an encoder alone, without training.
+        # x: (N, L, H_in)
+        self.eval()
+        with torch.no_grad():
+            x, h_n = self.rnn(x) # x: (N, L, 2H_out)
+                                 # h_n: (2, N, H_out)
+        # concatenate the layers' hidden representations
+        fwd_final_h_n = h_n[0, :, :] # (N, H_out)
+        bwd_final_h_n = h_n[1, :, :] # (N, H_out)
+        x = torch.cat([fwd_final_h_n, bwd_final_h_n], dim=1) # (N, 2H_out)
+        self.train()
+        return x
 
 
 class Decoder(nn.Module):
@@ -80,6 +93,19 @@ class Decoder(nn.Module):
         x = x.repeat(1, self.seq_len, 1) # (N, L, H_in)
         x, h_n = self.rnn(x) # x: (N, L, H_out)
                              # h_n: (1, N, H_out)
+        return x
+
+    def decode(self, x):
+        # lets one use the model as a decoder alone, without training it.
+        # when decoding, we let the model potentially predict sequences twice as long
+        # as the input. Hence, we concatenate x with itself to get a 2L long sequence.
+        # x: (N, H_in) nb that in principle one can use this to decode many words at once, even though we typically only do one
+        x = torch.concat([x, x], dim=1) # x: (N, 2L, H_in)
+        self.eval()
+        with torch.no_grad():
+            x, h_n = self.rnn(x) # x: (N, 2L, H_out)
+                                 # h_n: (1, N, H_out)
+        self.train()
         return x
 
 
@@ -156,6 +182,16 @@ class AutoEncoder(nn.Module):
             decoded = self.decoder(encoded)
             squeezed_decoded = decoded.squeeze()
         return squeezed_decoded
+    
+    def loan_word(self, x):
+        # x: (N, L, H_in) ; N=1 typically but in principle you could batch things
+        # wraps the encode/decode process. Doesn't train the model.
+        self.eval()
+        with torch.no_grad():
+            encoded = self.encoder.encode(x) # (1, 2H_out)
+            decoded = self.decoder.decode(encoded) # (1, 2L, H_in)
+        self.train()
+        return decoded
 
     def load(self, PATH):
         self.is_fitted = True
