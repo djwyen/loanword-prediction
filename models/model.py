@@ -141,13 +141,15 @@ class AutoEncoder(nn.Module):
 
     def encode(self, x):
         self.eval()
-        encoded = self.encoder(x)
+        with torch.no_grad():
+            encoded = self.encoder(x)
         return encoded
 
     def decode(self, encoded):
         self.eval()
-        decoded = self.decoder(encoded)
-        squeezed_decoded = decoded.squeeze()
+        with torch.no_grad():
+            decoded = self.decoder(encoded)
+            squeezed_decoded = decoded.squeeze()
         return squeezed_decoded
 
     def load(self, PATH):
