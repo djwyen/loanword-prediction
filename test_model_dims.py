@@ -44,10 +44,7 @@ class TestModelDims(unittest.TestCase):
                                  max_grad_norm=0.005)
 
         some_dataloader_input = next(iter(self.dataloader))
-        print(some_dataloader_input.type())
-
         encoder_hidden_state = encoder(some_dataloader_input)
-        print(encoder_hidden_state.type())
         # remember that we copy the hidden state as many times as we want to generate outputs,
         # hence the length is MAX_SEQ_LEN here as well
         self.assertEqual(encoder_hidden_state.shape, (BATCH_SIZE, 2*HIDDEN_DIM))
