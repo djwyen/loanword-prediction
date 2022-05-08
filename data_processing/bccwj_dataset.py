@@ -19,6 +19,7 @@ PATH_TO_PROCESSED_CSV = "data/BCCWJ/pared_BCCWJ.csv"
 
 NUM_OF_PANPHON_FEATURES = 24 # there are 24 features output by panphon by default transcription
 PAD_FV = [0] * NUM_OF_PANPHON_FEATURES
+END_FV = [2] * NUM_OF_PANPHON_FEATURES
 
 # TODO could refactor to transcribe from kana to ipa in the Dataset, which would allow passing transcription broadness as a flag to the constructor for the Dataset. Pared_BCCWJ would just be to pick out the relevant words, and not to pretranscribe them.
 
@@ -31,6 +32,10 @@ def length_of_ipa(ipa):
 
 class BCCWJDataset(Dataset):
     def __init__(self, indices=None, max_seq_len=None):
+        # note: The max_seq_len here is the length of the longest sequence without the end-of-word token,
+        #       which is something this module adds itself.
+        #       However, the property max_seq_len it will be constructed with will be the correct length
+        #       of the longest sequence, which includes the +1.
         self.vocab_df = pd.read_csv(PATH_TO_PROCESSED_CSV)
         self._t = Transcriber()
         if indices is not None:
@@ -39,15 +44,16 @@ class BCCWJDataset(Dataset):
             self.indices = range(len(self.vocab_df))
         
         if max_seq_len is not None:
-            self.max_seq_len = max_seq_len
+            self.max_seq_len = max_seq_len + 1 # to accommodate the appended end-of-word tokens
         else:
+            # find the longest seq in this dataset ourselves
             self.max_seq_len = 0
-            # find the longest seq in this dataset
             for i, row in self.vocab_df.iterrows():
                 ipa = row['ipa']
                 length = length_of_ipa(ipa)
                 if length > self.max_seq_len:
                     self.max_seq_len = length
+            self.max_seq_len += 1
 
     def __len__(self):
         return len(self.indices)
@@ -67,9 +73,12 @@ class BCCWJDataset(Dataset):
         feature_vectors = self._t.ipa_to_feature_vectors(ipa)
         
         # pad sequence with dead all-zeroes segments up to the max seq len
-        length_diff = self.max_seq_len - length_of_ipa(ipa)
+        length_diff = (self.max_seq_len - 1) - length_of_ipa(ipa)
+        # the -1 is to account for the fact that max_seq_len has been increased by 1 for the end-of-word token
+        # We must pad by one less than this length difference.
         for _ in range(length_diff):
             feature_vectors.append(PAD_FV)
+        feature_vectors.append(END_FV)
 
         return np.array(feature_vectors)
 
