@@ -65,10 +65,11 @@ class BCCWJDataset(Dataset):
         # use Transcriber/panphon to create the more informative info about this word
         # segments = self._t.ipa_to_panphon_segments(ipa)
         feature_vectors = self._t.ipa_to_feature_vectors(ipa)
-
+        
         # pad sequence with dead all-zeroes segments up to the max seq len
         length_diff = self.max_seq_len - length_of_ipa(ipa)
-        feature_vectors += PAD_FV * length_diff
+        for _ in range(length_diff):
+            feature_vectors.append(PAD_FV)
 
         return np.array(feature_vectors)
 
