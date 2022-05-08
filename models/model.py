@@ -100,7 +100,8 @@ class Decoder(nn.Module):
         # when decoding, we let the model potentially predict sequences twice as long
         # as the input. Hence, we concatenate x with itself to get a 2L long sequence.
         # x: (N, H_in) nb that in principle one can use this to decode many words at once, even though we typically only do one
-        x = torch.concat([x, x], dim=1) # x: (N, 2L, H_in)
+        x = x.unsqueeze(1)
+        x = x.repeat(1, 2*self.seq_len, 1)
         self.eval()
         with torch.no_grad():
             x, h_n = self.rnn(x) # x: (N, 2L, H_out)
