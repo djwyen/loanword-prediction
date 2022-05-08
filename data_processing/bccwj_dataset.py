@@ -7,6 +7,7 @@ Following this: (https://pytorch.org/tutorials/beginner/basics/data_tutorial.htm
 import os
 import csv
 from math import floor
+import numpy as np
 import pandas as pd
 import torch
 from torch.utils.data import Dataset, DataLoader, random_split
@@ -53,8 +54,8 @@ class BCCWJDataset(Dataset):
 
     def __getitem__(self, idx):
         '''
-        Returns items as Python lists, padded to be of the max seq len
-        TODO look at having a padded end of sequence token?
+        Returns items as NumPy Arrays, padded to be of the max seq len
+        TODO look at having an end of sequence token before padding?
         '''
         # assert index is less than length?
         true_idx = self.indices[idx] # the index of the item in pared_BCCWJ we are retrieving
@@ -72,7 +73,7 @@ class BCCWJDataset(Dataset):
         length_diff = self.max_seq_len - length_of_ipa(ipa)
         feature_vectors += PAD_FV * length_diff
 
-        return feature_vectors, Word(true_idx, word, kana, origin, ipa)
+        return np.array(feature_vectors), Word(true_idx, word, kana, origin, ipa)
 
 
 def split_pared_bccwj(seed, frac):
