@@ -183,7 +183,7 @@ class AutoEncoder(nn.Module):
             squeezed_decoded = decoded.squeeze()
         return squeezed_decoded
     
-    def loan_word(self, x):
+    def loan_word_from_fv(self, x):
         # x: (N, L, H_in) ; N=1 typically but in principle you could batch things
         # wraps the encode/decode process. Doesn't train the model.
         self.eval()
