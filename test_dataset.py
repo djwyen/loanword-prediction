@@ -46,13 +46,13 @@ class TestWord(unittest.TestCase):
 
     def test_segments(self):
         a_segment = Segment(['syl', 'son', 'cons', 'cont', 'delrel', 'lat', 'nas', 'strid', 'voi', 'sg', 'cg', 'ant', 'cor', 'distr', 'lab', 'hi', 'lo', 'back', 'round', 'velaric', 'tense', 'long', 'hitone', 'hireg'], ftstr='[+syl, +son, -cons, +cont, -delrel, -lat, -nas, 0strid, +voi, -sg, -cg, 0ant, -cor, 0distr, -lab, -hi, +lo, -back, -round, -velaric, +tense, -long, 0hitone, 0hireg]')
-        segments = self.w.segments
+        segments = self._t.ipa_to_panphon_segments(self.w.ipa)
         # Segments are objects, so equality is by reference. To confirm two segments are the same we show they have distance 0.
         distance = a_segment - segments[4]
         self.assertEqual(distance, 0, 'Segments not identical')
 
     def test_feature_vectors(self):
-        feature_vectors = self.w.feature_vectors
+        feature_vectors = self._t.ipa_to_feature_vectors(self.w.ipa)
         a_features = [1, 1, -1, 1, -1, -1, -1, 0, 1, -1, -1, 0, -1, 0, -1, -1, 1, -1, -1, -1, 1, -1, 0, 0]
         self.assertEqual(feature_vectors[4], a_features, 'Feature vectors not identical')
 
