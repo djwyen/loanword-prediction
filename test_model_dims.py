@@ -4,6 +4,7 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
+from data_processing.transcriber import Transcriber
 from data_processing.bccwj_dataset import BCCWJDataset, split_pared_bccwj
 from models.model import Encoder, Decoder, AutoEncoder
 
@@ -22,6 +23,7 @@ class TestModelDims(unittest.TestCase):
         torch.manual_seed(SEED)
         self.dataset = BCCWJDataset(indices=None, max_seq_len=MAX_SEQ_LEN_NO_STOP)
         self.dataloader = DataLoader(self.dataset, BATCH_SIZE, shuffle=True)
+        self.t = Transcriber()
 
         # these are just an encoder/decoder detached from the rest of the model, made to check the dims work out
         self.encoder = Encoder(MAX_SEQ_LEN_WITH_STOP, NUM_PANPHON_FEATURES, HIDDEN_DIM)
@@ -53,8 +55,24 @@ class TestModelDims(unittest.TestCase):
         decoder_output = self.decoder(encoder_hidden_state)
         self.assertEqual(decoder_output.shape, (BATCH_SIZE, MAX_SEQ_LEN_WITH_STOP, NUM_PANPHON_FEATURES))
 
+        # separately of the above, check that the autoencoder pipelines things correctly
         _encoded, autoencoder_output = self.autoencoder(some_dataloader_input)
         self.assertEqual(autoencoder_output.shape, (BATCH_SIZE, MAX_SEQ_LEN_WITH_STOP, NUM_PANPHON_FEATURES))
+
+    def test_loaning(self):
+        some_gairaigo_fv = self.t.ipa_to_feature_vectors('kʌp')
+        some_gairaigo_fv = torch.Tensor(np.array(some_gairaigo_fv))
+        some_gairaigo_fv = some_gairaigo_fv.unsqueeze(0) # (1, L, H_in)
+
+        encoder_hidden_state = self.encoder.encode(some_gairaigo_fv) # (1, 2H_out)
+        self.assertEqual(encoder_hidden_state.shape, (1, 2*HIDDEN_DIM))
+
+        decoder_output = self.decoder.decode(encoder_hidden_state) # (1, 2L, H_in)
+        self.assertEqual(decoder_output.shape, (1, 2*MAX_SEQ_LEN_WITH_STOP, NUM_PANPHON_FEATURES))
+
+        # separately of the above, check that the autoencoder pipelines things correctly
+        autoencoder_output = self.autoencoder.loan_word_from_fv(some_gairaigo_fv) # (1, 2L, H_in)
+        self.assertEqual(autoencoder_output.shape, (1, 2*MAX_SEQ_LEN_WITH_STOP, NUM_PANPHON_FEATURES))
 
 
 if __name__ == '__main__':
