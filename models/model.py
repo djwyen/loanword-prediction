@@ -49,6 +49,8 @@ class Encoder(nn.Module):
     
     def forward(self, x):
         # x: (N, L, H_in)
+        # convert type of x tensor to float for use with RNN
+        x = x.type(torch.FloatTensor)
         x, h_n = self.rnn(x) # x: (N, L, 2H_out)
                              # h_n: (2, N, H_out)
         # concatenate the layers' hidden representations
