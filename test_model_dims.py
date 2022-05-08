@@ -23,6 +23,18 @@ class TestModelDims(unittest.TestCase):
         self.dataset = BCCWJDataset(indices=None, max_seq_len=MAX_SEQ_LEN_NO_STOP)
         self.dataloader = DataLoader(self.dataset, BATCH_SIZE, shuffle=True)
 
+        # these are just an encoder/decoder detached from the rest of the model, made to check the dims work out
+        self.encoder = Encoder(MAX_SEQ_LEN_WITH_STOP, NUM_PANPHON_FEATURES, HIDDEN_DIM)
+        self.decoder = Decoder(MAX_SEQ_LEN_WITH_STOP, 2*HIDDEN_DIM, NUM_PANPHON_FEATURES) # factor of 2 comes from bidirectionality of encoder
+        # an actual autoencoder, too. We could have tested this autoencoder's own encoder/decoder
+        # but that makes it a little harder to explicitly see their parameters.
+        self.autoencoder = AutoEncoder(MAX_SEQ_LEN_WITH_STOP, NUM_PANPHON_FEATURES, HIDDEN_DIM,
+                                 learning_rate=1e-3,
+                                 every_epoch_print=10,
+                                 epochs=160,
+                                 patience=5,
+                                 max_grad_norm=0.005)
+
     def test_data_dims(self):
         some_dataset_input = next(iter(self.dataset))
         self.assertIsInstance(some_dataset_input, np.ndarray)
@@ -32,27 +44,16 @@ class TestModelDims(unittest.TestCase):
         self.assertEqual(some_dataloader_input.shape, (BATCH_SIZE, MAX_SEQ_LEN_WITH_STOP, NUM_PANPHON_FEATURES))
 
     def test_model_dims(self):
-        # these are just an encoder/decoder detached from the rest of the model, made to check the dims work out
-        encoder = Encoder(MAX_SEQ_LEN_WITH_STOP, NUM_PANPHON_FEATURES, HIDDEN_DIM)
-        decoder = Decoder(MAX_SEQ_LEN_WITH_STOP, 2*HIDDEN_DIM, NUM_PANPHON_FEATURES) # factor of 2 comes from bidirectionality of encoder
-        # an actual autoencoder, too
-        autoencoder = AutoEncoder(MAX_SEQ_LEN_WITH_STOP, NUM_PANPHON_FEATURES, HIDDEN_DIM,
-                                 learning_rate=1e-3,
-                                 every_epoch_print=10,
-                                 epochs=160,
-                                 patience=5,
-                                 max_grad_norm=0.005)
-
         some_dataloader_input = next(iter(self.dataloader))
-        encoder_hidden_state = encoder(some_dataloader_input)
+        encoder_hidden_state = self.encoder(some_dataloader_input)
         # remember that we copy the hidden state as many times as we want to generate outputs,
         # hence the length is MAX_SEQ_LEN here as well
         self.assertEqual(encoder_hidden_state.shape, (BATCH_SIZE, 2*HIDDEN_DIM))
 
-        decoder_output = decoder(encoder_hidden_state)
+        decoder_output = self.decoder(encoder_hidden_state)
         self.assertEqual(decoder_output.shape, (BATCH_SIZE, MAX_SEQ_LEN_WITH_STOP, NUM_PANPHON_FEATURES))
 
-        _encoded, autoencoder_output = autoencoder(some_dataloader_input)
+        _encoded, autoencoder_output = self.autoencoder(some_dataloader_input)
         self.assertEqual(autoencoder_output.shape, (BATCH_SIZE, MAX_SEQ_LEN_WITH_STOP, NUM_PANPHON_FEATURES))
 
 
