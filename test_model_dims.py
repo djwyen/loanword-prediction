@@ -59,7 +59,7 @@ class TestModelDims(unittest.TestCase):
         _encoded, autoencoder_output = self.autoencoder(some_dataloader_input)
         self.assertEqual(autoencoder_output.shape, (BATCH_SIZE, MAX_SEQ_LEN_WITH_STOP, NUM_PANPHON_FEATURES))
 
-    def test_loaning(self):
+    def test_loaning_dims(self):
         some_gairaigo_fv = self.t.ipa_to_feature_vectors('kʌp')
         some_gairaigo_fv = torch.Tensor(np.array(some_gairaigo_fv))
         some_gairaigo_fv = some_gairaigo_fv.unsqueeze(0) # (1, L, H_in)
