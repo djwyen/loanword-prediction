@@ -12,7 +12,6 @@ import torch.nn as nn
 import numpy as np
 import pandas as pd
 from .early_stopping import *
-from tqdm import tqdm_notebook as tqdm
 
 SEED = 888
 torch.manual_seed(SEED)
@@ -23,6 +22,7 @@ class Token:
     EOS = -2
 
 # TODO for now only supports bidirectional, all the code assumes it
+# TODO the dropout is only applied between layers so for 1 layer rnns this does nothing
 
 class Encoder(nn.Module):
     def __init__(self, seq_len, input_size, hidden_size, num_layers=1, bidirectional=True, dropout=0.):
@@ -54,10 +54,11 @@ class Encoder(nn.Module):
         x, h_n = self.rnn(x) # x: (N, L, 2H_out)
                              # h_n: (2, N, H_out)
         # concatenate the layers' hidden representations
-        fwd_final_h_n = h_n[0, :, :] # (1, N, H_out)
-        bwd_final_h_n = h_n[1, :, :] # (1, N, H_out)
-        concat = torch.cat([fwd_final_h_n, bwd_final_h_n], dim=2) # (1, N, 2H_out)
-        return concat.reshape((-1, 1, 2*self.hidden_size)) # (N, 1, 2H_out)
+        fwd_final_h_n = h_n[0, :, :] # (N, H_out)
+        bwd_final_h_n = h_n[1, :, :] # (N, H_out)
+        x = torch.cat([fwd_final_h_n, bwd_final_h_n], dim=1) # (N, 2H_out)
+        return x
+
 
 
 class Decoder(nn.Module):
@@ -73,8 +74,10 @@ class Decoder(nn.Module):
                            dropout=dropout)
 
     def forward(self, x):
-        # x: (N, L, H_in)
-        # x = x.unsqueeze(1).repeat(1, self.seq_len, 1) # x: (N, 1, L, H_in) -> ()
+        # x: (N, H_in)
+        # we need to copy the tensor L times for the L decodes:
+        x = x.unsqueeze(1) # (N, 1, 2H_out)
+        x = x.repeat(1, self.seq_len, 1) # (N, L, H_in)
         x, h_n = self.rnn(x) # x: (N, L, H_out)
                              # h_n: (1, N, H_out)
         return x
