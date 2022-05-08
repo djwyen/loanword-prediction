@@ -87,8 +87,6 @@ def split_pared_bccwj(seed, frac):
     n_test = n_words - n_train
     split = [n_train, n_test]
 
-    assert(sum(split) == n_words, "Split does not use all words")
-
     train_indices, test_indices = random_split(range(n_words), split,
                                                generator=torch.Generator().manual_seed(seed))
 
