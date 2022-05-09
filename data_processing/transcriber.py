@@ -255,7 +255,7 @@ class Transcriber():
         # correct for characters counted as two segments due to their unicode representations
         length -= word_in_ipa.count('ç') + word_in_ipa.count('ɰ̃') + word_in_ipa.count('ĩ')
         # correct for affricates, which are one segment counted as three (two segs + joiner)
-        length -= 2 * ( word_in_ipa.count('d͡ʑ') + word_in_ipa.count('t͡ɕ') + word_in_ipa.count('t͡s') )
+        length -= 2 * ( word_in_ipa.count('d͡ʑ') + word_in_ipa.count('t͡ɕ') + word_in_ipa.count('t͡s') + word_in_ipa.count('d͡z') )
         return length
 
     def ipa_to_panphon_segments(self, word_in_ipa: str) -> List[Segment]:
