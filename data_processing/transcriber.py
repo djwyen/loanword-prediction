@@ -36,7 +36,7 @@ class Transcriber():
                 kana, ipa = line
                 self.katakana_to_intermediate[kana] = ipa
         self.ipa_to_shorthand_dict = {}
-        self.shorthand_to_fv = {}
+        self.shorthand_to_fv_dict = {}
         with open(SHORTHAND_TO_FV_CSV) as f:
             reader = csv.reader(f)
             header = next(reader)
@@ -44,9 +44,9 @@ class Transcriber():
                 shorthand_char = line[0]
                 ipa = line[1]
                 fv = line[2:]
-                assert(shorthand_char not in self.shorthand_to_fv) # make sure I made a good shorthand...
+                assert(shorthand_char not in self.shorthand_to_fv_dict) # make sure I made a good shorthand...
                 self.ipa_to_shorthand_dict[ipa] = shorthand_char
-                self.shorthand_to_fv[shorthand_char] = fv
+                self.shorthand_to_fv_dict[shorthand_char] = fv
 
     def katakana_to_ipa(self, word_in_katakana):
         """
@@ -266,7 +266,7 @@ class Transcriber():
         '''
         result = []
         for c in shorthand:
-            result.append(self.shorthand_to_fv[c])
+            result.append(self.shorthand_to_fv_dict[c])
         return result
 
     def katakana_to_romaji(self, word_in_katakana):
