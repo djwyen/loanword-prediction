@@ -37,11 +37,11 @@ def weighted_loss(prediction, target):
     weight_tensor = torch.tensor(weight_tensor).unsqueeze(0) # (1, H_in)
     repeated_weights = weight_tensor.expand((target.shape[0], MAX_SEQ_LEN_WITH_EOW, -1)) # (N, L, H_in)
 
-    prediction = torch.mul(repeated_weights, prediction)
-    target = torch.mul(repeated_weights, target)
+    # prediction = torch.mul(repeated_weights, prediction)
+    # target = torch.mul(repeated_weights, target)
 
     # the factor of 1000 is arbitrary to keep numbers larger
-    loss = 1000*torch.mean((target - prediction)**2)
+    loss = 1000*torch.mean(repeated_weights * (target - prediction)**2)
     return loss
 
 # largely based off of https://curiousily.com/posts/time-series-anomaly-detection-using-lstm-autoencoder-with-pytorch-in-python/
