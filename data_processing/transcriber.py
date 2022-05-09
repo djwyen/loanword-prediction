@@ -7,6 +7,7 @@ import panphon
 from panphon.segment import Segment
 
 KATAKANA_TO_IPA_CSV = 'kana_to_ipa.csv'
+SHORTHAND_TO_FV_CSV = 'shorthand_to_fv.csv'
 
 # represents how strict to be with transcriptions, currently just two settings
 class TranscriptionStyle:
@@ -34,8 +35,17 @@ class Transcriber():
             for line in reader:
                 kana, ipa = line
                 self.katakana_to_intermediate[kana] = ipa
+        self.shorthand_to_fv = {}
+        with open(SHORTHAND_TO_FV_CSV) as f:
+            reader = csv.reader(f)
+            header = next(reader)
+            for line in reader:
+                shorthand_char = line[0]
+                fv = line[2:]
+                assert(shorthand_char not in self.shorthand_to_fv) # make sure I made a good shorthand...
+                self.shorthand_to_fv[shorthand_char] = fv
 
-    def katakana_to_ipa(self, word_in_katakana: str) -> str:
+    def katakana_to_ipa(self, word_in_katakana):
         """
         Converts a word or series of words in katakana to its IPA equivalent.
         
@@ -237,11 +247,21 @@ class Transcriber():
 
         return polished
 
-    def katakana_to_romaji(self, word_in_katakana: str) -> str:
+    def ipa_to_shorthand(self, ipa):
+        '''
+        Converts a word in IPA to a shorthand version of the word where one char
+        corresponds to one segment (while in IPA, one segment may be a digraph or have diacritics)
+        '''
+        shorthand = ipa
+        for ipa_glyph, seg in self.shorthand_to_fv:
+            shorthand = shorthand.replace(ipa_glyph, seg)
+        return shorthand
+
+    def katakana_to_romaji(self, word_in_katakana):
         # TODO implement similar to katakana_to_ipa; create a csv with the transcription equivalents (and special chars)
         pass
 
-    def length_in_segments(self, word_in_ipa: str) -> int:
+    def length_in_segments(self, word_in_ipa):
         """
         A Japanese-specific method for calculating the length of a word in IPA.
         In particular also specific to my BROAD transcription of Japanese.
@@ -258,7 +278,7 @@ class Transcriber():
         length -= 2 * ( word_in_ipa.count('d͡ʑ') + word_in_ipa.count('t͡ɕ') + word_in_ipa.count('t͡s') + word_in_ipa.count('d͡z') )
         return length
 
-    def ipa_to_panphon_segments(self, word_in_ipa: str) -> List[Segment]:
+    def ipa_to_panphon_segments(self, word_in_ipa):
         """
         Converts a string of IPA characters to a list of panphon Segments.
         See the panphon documentation for properties of Segment (https://github.com/dmort27/panphon)
@@ -270,7 +290,7 @@ class Transcriber():
         #     print(f'illegal word: {word_in_ipa}')
         return ft.word_fts(word_in_ipa)
 
-    def ipa_to_feature_vectors(self, word_in_ipa: str) -> List[List[int]]:
+    def ipa_to_feature_vectors(self, word_in_ipa):
         """
         Converts a word in IPA to a numpy array of integers {+1,-1,0} corresponding to features.
         A given row corresponds to a segment's list of features. In that list, each index corresponds to a particular feature,
