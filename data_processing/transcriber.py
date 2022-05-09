@@ -35,14 +35,17 @@ class Transcriber():
             for line in reader:
                 kana, ipa = line
                 self.katakana_to_intermediate[kana] = ipa
+        self.ipa_to_shorthand = {}
         self.shorthand_to_fv = {}
         with open(SHORTHAND_TO_FV_CSV) as f:
             reader = csv.reader(f)
             header = next(reader)
             for line in reader:
                 shorthand_char = line[0]
+                ipa = line[1]
                 fv = line[2:]
                 assert(shorthand_char not in self.shorthand_to_fv) # make sure I made a good shorthand...
+                self.ipa_to_shorthand[ipa] = shorthand_char
                 self.shorthand_to_fv[shorthand_char] = fv
 
     def katakana_to_ipa(self, word_in_katakana):
@@ -253,9 +256,18 @@ class Transcriber():
         corresponds to one segment (while in IPA, one segment may be a digraph or have diacritics)
         '''
         shorthand = ipa
-        for ipa_glyph, seg in self.shorthand_to_fv:
+        for ipa_glyph, seg in self.ipa_to_shorthand:
             shorthand = shorthand.replace(ipa_glyph, seg)
         return shorthand
+
+    def shorthand_to_fv(self, shorthand):
+        '''
+        Converts a word in shorthand to a list of numbers denoting its features
+        '''
+        result = []
+        for c in shorthand:
+            result.append(self.shorthand_to_fv[c])
+        return result
 
     def katakana_to_romaji(self, word_in_katakana):
         # TODO implement similar to katakana_to_ipa; create a csv with the transcription equivalents (and special chars)
