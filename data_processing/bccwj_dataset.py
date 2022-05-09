@@ -83,7 +83,7 @@ class BCCWJDataset(Dataset):
         return np.array(feature_vectors)
 
 
-def split_pared_bccwj(seed, frac):
+def split_pared_bccwj(seed, frac, max_seq_len=None):
     """
     Splits the pared bccwj data into a test set and a training set such that `f` in [0, 1]
     of the data becomes test and the rest is kept as training.
@@ -97,4 +97,4 @@ def split_pared_bccwj(seed, frac):
     train_indices, test_indices = random_split(range(n_words), split,
                                                generator=torch.Generator().manual_seed(seed))
 
-    return BCCWJDataset(train_indices), BCCWJDataset(test_indices)
+    return BCCWJDataset(train_indices, max_seq_len), BCCWJDataset(test_indices, max_seq_len)
