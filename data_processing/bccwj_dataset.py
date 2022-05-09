@@ -88,6 +88,7 @@ def split_pared_bccwj(seed, frac, max_seq_len=None):
     Splits the pared bccwj data into a test set and a training set such that `f` in [0, 1]
     of the data becomes test and the rest is kept as training.
     `seed` is the random seed to use for reproducibility.
+    `max_seq_len` is the maximum sequence length, excluding the end-of-word token that will be appended
     """
     n_words = len(BCCWJDataset())
     n_train = floor(frac * n_words)
