@@ -256,7 +256,7 @@ class Transcriber():
         corresponds to one segment (while in IPA, one segment may be a digraph or have diacritics)
         '''
         shorthand = ipa
-        for ipa_glyph, seg in self.ipa_to_shorthand_dict:
+        for ipa_glyph, seg in self.ipa_to_shorthand_dict.items():
             shorthand = shorthand.replace(ipa_glyph, seg)
         return shorthand
 
