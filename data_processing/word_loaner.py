@@ -41,7 +41,7 @@ class WordLoaner():
         # turns an ipa word into its loaned form and returns the segments
         val_to_feature_sign_char = {1: '+', 0: '0', -1: '-'}
         
-        word_fv = word_fv(ipa, discretize=True)
+        word_fv = self.word_to_fv(ipa, discretize=True)
 
         segments = []
 
