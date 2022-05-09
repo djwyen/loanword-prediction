@@ -11,7 +11,6 @@ import torch
 import torch.nn as nn
 import numpy as np
 import pandas as pd
-from .early_stopping import *
 
 SEED = 888
 torch.manual_seed(SEED)
