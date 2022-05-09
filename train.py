@@ -28,12 +28,28 @@ HIDDEN_DIM = 32 # remember that the hidden state must contain the entire sequenc
 MAX_SEQ_LEN_WITHOUT_EOW = 20
 MAX_SEQ_LEN_WITH_EOW = MAX_SEQ_LEN_WITHOUT_EOW + 1
 
+# pulled from https://github.com/dmort27/panphon/blob/master/panphon/data/feature_weights.csv
+# some arbitrary weighting of the features
+FEATURE_WEIGHTS = [1,1,1,0.5,0.25,0.25,0.25,0.125,0.125,0.125,0.125,0.25,0.25,0.125,0.25,0.25,0.25,0.25,0.25,0.25,0.125,0.25,0,0]
+
+def weighted_loss(prediction, target):
+    weight_tensor = np.array(FEATURE_WEIGHTS)
+    weight_tensor = torch.tensor(weight_tensor).unsqueeze(0) # (1, H_in)
+    repeated_weights = weight_tensor.expand((target.shape[0], MAX_SEQ_LEN_WITH_EOW, -1)) # (N, L, H_in)
+
+    prediction = torch.mul(repeated_weights, prediction)
+    target = torch.mul(repeated_weights, target)
+
+    # the factor of 1000 is arbitrary to keep numbers larger
+    loss = 1000*torch.mean((target - prediction)**2)
+    return loss
 
 # largely based off of https://curiousily.com/posts/time-series-anomaly-detection-using-lstm-autoencoder-with-pytorch-in-python/
 def train_model(model, train_dataloader, val_dataloader, device,
                 num_epochs=50, learning_rate=1e-3):
     optimizer = torch.optim.Adam(model.parameters(), lr = learning_rate)
-    criterion = nn.MSELoss(reduction='mean')
+    # criterion = nn.MSELoss(reduction='mean')
+    criterion = weighted_loss
     history = dict(train=[], val=[])
 
     best_loss = None
