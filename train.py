@@ -61,6 +61,7 @@ def train_model(model, train_dataloader, val_dataloader):
             target = target.to(device)
             _encoded, prediction = model(target)
 
+            target = target.type(torch.FloatTensor) # to allow loss comparison
             loss = criterion(prediction, target)
 
             # check if we should stop early due to no improvement
@@ -83,6 +84,7 @@ def train_model(model, train_dataloader, val_dataloader):
                 target = target.to(device)
                 _encoded, prediction = model(target)
 
+                target = target.type(torch.FloatTensor)
                 loss = criterion(prediction, target)
                 val_losses.append(loss.item())
 
