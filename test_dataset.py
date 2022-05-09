@@ -1,13 +1,16 @@
 import unittest
 import csv
+import numpy as np
 import panphon
 from panphon.segment import Segment
 from data_processing.bccwj_dataset import BCCWJDataset
 from data_processing.word import Word
 from data_processing.transcriber import Transcriber
 
-PATH_TO_OUTPUT_CSV = "data/BCCWJ/pared_BCCWJ.csv"
 OUTPUT_CSV_LENGTH = 36396 # as of last generation
+MAX_SEQ_LEN_NO_PAD = 20
+MAX_SEQ_LEN_WITH_PAD = 21
+N_FEATURES = 24
 
 
 class TestTranscriber(unittest.TestCase):
@@ -58,32 +61,23 @@ class TestWord(unittest.TestCase):
 
 class TestDataset(unittest.TestCase):
     def setUp(self):
-        self.dataset = BCCWJDataset()
+        self.dataset = BCCWJDataset(range(OUTPUT_CSV_LENGTH), MAX_SEQ_LEN_NO_PAD)
 
     def test_size(self):
         self.assertEqual(len(self.dataset), OUTPUT_CSV_LENGTH)
-
+    
+    def test_output_dims(self):
+        entry = next(iter(self.dataset))
+        self.assertIsInstance(entry, np.ndarray)
+    
     def test_accesses(self):
-        # TODO these transcriptions assume a BROAD transcription; denote that somewhere
         first_access = self.dataset[0]
-        # should be だ,ダ,da,和
-        self.assertEqual(str(first_access), '0: だ, ダ, da')
-        self.assertEqual(first_access.origin, '和')
+        self.assertEqual(first_access.shape, (MAX_SEQ_LEN_WITH_PAD, N_FEATURES))
+        self.assertTrue(all([(lambda x: x == 2) for x in first_access[-1, :]])) # ie the EOW token
 
-        last_access = self.dataset[OUTPUT_CSV_LENGTH - 1]
-        # should be ワーピア,ワーピア,ɰaːpia,固
-        self.assertEqual(str(last_access), '36395: ワーピア, ワーピア, ɰaːpia')
-        self.assertEqual(last_access.origin, '固')
-
-        middle_access_1 = self.dataset[17511]
-        # should be 撃沈,ゲキチン,ɡekit͡ɕiɴ,漢
-        self.assertEqual(str(middle_access_1), '17511: 撃沈, ゲキチン, ɡekit͡ɕiɴ')
-        self.assertEqual(middle_access_1.origin, '漢')
-
-        middle_access_2 = self.dataset[8928]
-        # should be ノック,ノック,nokkɯ,外
-        self.assertEqual(str(middle_access_2), '8928: ノック, ノック, nokkɯ')
-        self.assertEqual(middle_access_2.origin, '外')
+        middle_access = self.dataset[17511]
+        self.assertEqual(middle_access.shape, (MAX_SEQ_LEN_WITH_PAD, N_FEATURES))
+        self.assertTrue(all([(lambda x: x == 2) for x in middle_access[-1, :]])) # ie the EOW token
 
 
 if __name__ == '__main__':
