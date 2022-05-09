@@ -134,7 +134,6 @@ class AutoEncoder(nn.Module):
 
     def forward(self, x):
         # x: (N, L, H_in) ie (N, L, input_size)
-        torch.manual_seed(SEED)
         encoded = self.encoder(x) # encoded: (N, 1, 2H_out) ie (N, 1, 2hidden_size)
         decoded = self.decoder(encoded) # decoded: (N, L, H_out) ie (N, L, input_size)
         return encoded, decoded
