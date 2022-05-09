@@ -5,7 +5,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from .models.model import AutoEncoder
+from models.model import AutoEncoder
 from data_processing.bccwj_dataset import split_pared_bccwj
 
 # CUDA for PyTorch
