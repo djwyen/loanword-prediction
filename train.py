@@ -15,7 +15,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 parameters = {'batch_size': 64,
               'shuffle': True,
               'num_workers': 2}
-num_epochs = 50
+num_epochs = 2
 learning_rate = 1e-3
 
 # parameters for splitting up the dataset
@@ -65,10 +65,6 @@ def train_model(model, train_dataloader, val_dataloader, device,
                 target = target.type(torch.FloatTensor)
                 loss = criterion(prediction, target)
                 val_losses.append(loss.item())
-        
-        if best_loss is None or val_loss < best_loss:
-            best_loss = val_loss
-            torch.save(model.state_dict(), './checkpoint.pt')
 
         train_loss = np.mean(train_losses)
         val_loss = np.mean(val_losses)
@@ -77,6 +73,10 @@ def train_model(model, train_dataloader, val_dataloader, device,
         history['val'].append(val_loss)
 
         print(f'Epoch : {epoch}, train_loss: {train_loss:.7f}, val_loss: {val_loss:.7f}')
+        
+        if best_loss is None or val_loss < best_loss:
+            best_loss = val_loss
+            torch.save(model.state_dict(), './checkpoint.pt')
     
     model.load_state_dict(torch.load('./checkpoint.pt'))
     model.eval()
