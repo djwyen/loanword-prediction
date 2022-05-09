@@ -16,6 +16,7 @@ from .word import Word
 
 # path to the pared BCCWJ dataset that is created by `process_bccwj.py`
 PATH_TO_PROCESSED_CSV = "data/BCCWJ/pared_BCCWJ.csv"
+PATH_TO_PROCESSED_GZ = "data/BCCWJ/fv_pared_BCCWJ.gz"
 
 NUM_OF_PANPHON_FEATURES = 24 # there are 24 features output by panphon by default transcription
 PAD_FV = [0] * NUM_OF_PANPHON_FEATURES
@@ -31,29 +32,17 @@ def length_of_ipa(ipa):
 
 
 class BCCWJDataset(Dataset):
-    def __init__(self, indices=None, max_seq_len=None):
+    def __init__(self, indices, max_seq_len):
         # note: The max_seq_len here is the length of the longest sequence without the end-of-word token,
         #       which is something this module adds itself.
         #       However, the property max_seq_len it will be constructed with will be the correct length
         #       of the longest sequence, which includes the +1.
-        self.vocab_df = pd.read_csv(PATH_TO_PROCESSED_CSV)
-        self._t = Transcriber()
-        if indices is not None:
-            self.indices = indices # the set of indices this Dataset covers
-        else:
-            self.indices = range(len(self.vocab_df))
-        
-        if max_seq_len is not None:
-            self.max_seq_len = max_seq_len + 1 # to accommodate the appended end-of-word tokens
-        else:
-            # find the longest seq in this dataset ourselves
-            self.max_seq_len = 0
-            for i, row in self.vocab_df.iterrows():
-                ipa = row['ipa']
-                length = length_of_ipa(ipa)
-                if length > self.max_seq_len:
-                    self.max_seq_len = length
-            self.max_seq_len += 1
+        self.vocab_nparray = np.loadtxt(PATH_TO_PROCESSED_GZ)
+        # by the way that the np array was saved, each entry is a flattened version
+        # of the word; ie it was flattened from (MAX_LEN, N_FEATURES) to just (MAX_LEN * N_FEATURES)
+        # so you need to reshape to recover it, which we can perform in __item__
+        self.indices = indices # the set of indices this Dataset covers
+        self.max_seq_len = max_seq_len + 1 # to accommodate the appended end-of-word tokens
 
     def __len__(self):
         return len(self.indices)
@@ -61,26 +50,16 @@ class BCCWJDataset(Dataset):
     def __getitem__(self, idx):
         '''
         Returns items as NumPy Arrays, padded to be of the max seq len
-        TODO look at having an end of sequence token before padding?
         '''
         # assert index is less than length?
         true_idx = self.indices[idx] # the index of the item in pared_BCCWJ we are retrieving
 
-        ipa = self.vocab_df.at[true_idx, 'ipa']
+        # we have to unflatten each word
+        flat_word = self.vocab_nparray[true_idx, :]
+        # unflatten to be a list of segment feature vectors
+        feature_vectors = flat_word.reshape((self.max_seq_len, NUM_OF_PANPHON_FEATURES))
 
-        # use Transcriber/panphon to create the more informative info about this word
-        # segments = self._t.ipa_to_panphon_segments(ipa)
-        feature_vectors = self._t.ipa_to_feature_vectors(ipa)
-        
-        # pad sequence with dead all-zeroes segments up to the max seq len
-        length_diff = (self.max_seq_len - 1) - length_of_ipa(ipa)
-        # the -1 is to account for the fact that max_seq_len has been increased by 1 for the end-of-word token
-        # We must pad by one less than this length difference.
-        for _ in range(length_diff):
-            feature_vectors.append(PAD_FV)
-        feature_vectors.append(END_FV)
-
-        return np.array(feature_vectors)
+        return feature_vectors
 
 
 def split_pared_bccwj(seed, frac, max_seq_len=None):
@@ -90,7 +69,7 @@ def split_pared_bccwj(seed, frac, max_seq_len=None):
     `seed` is the random seed to use for reproducibility.
     `max_seq_len` is the maximum sequence length, excluding the end-of-word token that will be appended
     """
-    n_words = len(BCCWJDataset())
+    n_words = np.loadtxt(PATH_TO_PROCESSED_GZ).size
     n_train = floor(frac * n_words)
     n_test = n_words - n_train
     split = [n_train, n_test]
