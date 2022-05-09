@@ -1,14 +1,8 @@
-import os
 import numpy as np
-import pandas as pd
 
 import torch
 import torch.nn as nn
 from tqdm import tqdm
-
-from .data_processing.bccwj_dataset import BCCWJDataset, split_pared_bccwj
-from .models import AutoEncoder
-from .models.early_stopping import EarlyStopping
 
 # largely based off of https://curiousily.com/posts/time-series-anomaly-detection-using-lstm-autoencoder-with-pytorch-in-python/
 def train_model(model, train_dataloader, val_dataloader, device,
@@ -62,5 +56,6 @@ def train_model(model, train_dataloader, val_dataloader, device,
         print(f'Epoch : {epoch}, train_loss: {train_loss:.7f}, val_loss: {val_loss:.7f}')
     
     model.load_state_dict(torch.load('./checkpoint.pt'))
+    model.eval()
 
-    return model.eval(), history
+    return model, history
