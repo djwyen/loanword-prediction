@@ -36,6 +36,7 @@ class Transcriber():
                 kana, ipa = line
                 self.katakana_to_intermediate[kana] = ipa
         self.ipa_to_shorthand_dict = {}
+        self.ipa_sub_order = [] # the order in which to do the substitutions
         self.shorthand_to_fv_dict = {}
         with open(SHORTHAND_TO_FV_CSV) as f:
             reader = csv.reader(f)
@@ -45,8 +46,9 @@ class Transcriber():
                 ipa = line[1]
                 fv_as_strings = line[2:]
                 fv = [int(s) for s in fv_as_strings]
-                assert(shorthand_char not in self.shorthand_to_fv_dict) # make sure I made a good shorthand...
+
                 self.ipa_to_shorthand_dict[ipa] = shorthand_char
+                self.ipa_sub_order.append(ipa)
                 self.shorthand_to_fv_dict[shorthand_char] = fv
 
     def katakana_to_ipa(self, word_in_katakana):
@@ -256,9 +258,12 @@ class Transcriber():
         Converts a word in IPA to a shorthand version of the word where one char
         corresponds to one segment (while in IPA, one segment may be a digraph or have diacritics)
         '''
+        # we have to be careful about the order in which we make the subs since
+        # they can bleed each other, so we should do the substitutions in a particular order
         shorthand = ipa
-        for ipa_glyph, seg in self.ipa_to_shorthand_dict.items():
-            shorthand = shorthand.replace(ipa_glyph, seg)
+        for ipa_glyph in self.ipa_sub_order:
+            shorthand_seg = self.ipa_to_shorthand_dict[ipa_glyph]
+            shorthand = shorthand.replace(ipa_glyph, shorthand_seg)
         return shorthand
 
     def shorthand_to_fv(self, shorthand):
