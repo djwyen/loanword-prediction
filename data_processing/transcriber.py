@@ -287,7 +287,7 @@ class Transcriber():
             if least_distance is None or total < least_distance:
                 least_distance = total
                 closest_seg = c
-        return {v: k for k, v in self.ipa_to_shorthand.items()}[closest_seg]
+        return {v: k for k, v in self.ipa_to_shorthand_dict.items()}[closest_seg]
 
     def katakana_to_romaji(self, word_in_katakana):
         # TODO implement similar to katakana_to_ipa; create a csv with the transcription equivalents (and special chars)
