@@ -37,9 +37,7 @@ def train_model(model, train_dataloader, val_dataloader, device,
     history = dict(train=[], val=[])
 
     best_loss = None
-    for epoch in tqdm(range(1, model.epochs+1)):
-        # early_stopping.epoch = epoch
-
+    for epoch in tqdm(range(1, num_epochs+1)):
         # train
         train_losses = []
         model.train()
@@ -92,12 +90,10 @@ def main():
 
     train_dataloader = DataLoader(train_dataset,
                                 batch_size=parameters['batch_size'],
-                                shuffle=parameters['shuffle'],
-                                num_workers=parameters['num_workers'])
+                                shuffle=parameters['shuffle'])
     val_dataloader = DataLoader(val_dataset,
                                 batch_size=parameters['batch_size'],
-                                shuffle=parameters['shuffle'],
-                                num_workers=parameters['num_workers'])
+                                shuffle=parameters['shuffle'])
 
 
     # model
