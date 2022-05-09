@@ -69,7 +69,7 @@ def split_pared_bccwj(seed, frac, max_seq_len=None):
     `seed` is the random seed to use for reproducibility.
     `max_seq_len` is the maximum sequence length, excluding the end-of-word token that will be appended
     """
-    n_words = np.loadtxt(PATH_TO_PROCESSED_GZ).size
+    n_words = np.loadtxt(PATH_TO_PROCESSED_GZ).shape[0]
     n_train = floor(frac * n_words)
     n_test = n_words - n_train
     split = [n_train, n_test]
