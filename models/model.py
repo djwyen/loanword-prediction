@@ -139,38 +139,6 @@ class AutoEncoder(nn.Module):
         decoded = self.decoder(encoded) # decoded: (N, L, H_out) ie (N, L, input_size)
         return encoded, decoded
 
-    def fit(self, x):
-        optimizer = torch.optim.Adam(self.parameters(), lr = self.learning_rate)
-        criterion = nn.MSELoss(reduction='mean')
-        self.train()
-
-        early_stopping = EarlyStopping(patience=self.patience, verbose=False)
-
-        for epoch in range (1, self.epochs+1):
-            early_stopping.epoch = epoch
-            optimizer.zero_grad()
-            encoded, decoded = self(x)
-            loss = criterion(decoded, x)
-
-            early_stopping(loss, self)
-
-            if early_stopping.early_stop:
-                break
-
-            loss.backward()
-            nn.utils.clip_grad_norm_(self.parameters(), max_norm=self.max_grad_norm)
-            optimizer.step()
-
-            if epoch % self.every_epoch_print == 0:
-                print(f'epoch : {epoch}, loss_mean : {loss.item():.7f}')
-        
-        self.load_state_dict(torch.load('./checkpoint.pt'))
-
-        encoded, decoded = self(x)
-        final_loss = criterion(decoded, x).item()
-
-        return final_loss
-
     def encode(self, x):
         self.eval()
         with torch.no_grad():
