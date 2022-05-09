@@ -279,7 +279,7 @@ class Transcriber():
             result.append(self.shorthand_to_fv_dict[c])
         return result
 
-    def greedy_select_segment(self, fv, weighted=False):
+    def greedy_select_segment(self, fv, weighted=True):
         # returns the ipa character in Japanese with the closest fv representation
         # to the given segment
         least_distance = None
