@@ -155,5 +155,4 @@ class AutoEncoder(nn.Module):
         return decoded
 
     def load(self, PATH):
-        self.is_fitted = True
         self.load_state_dict(torch.load(PATH))
