@@ -37,9 +37,9 @@ def main():
             fv = t.shorthand_to_fv(shorthand)
 
             length_diff = MAX_SEQ_LEN_NO_PAD - length_of_ipa(ipa)
+            fv.append(END_FV)
             for _ in range(length_diff):
                 fv.append(PAD_FV)
-            fv.append(END_FV)
 
             flat_fv = []
             for vec in fv:
