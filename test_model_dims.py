@@ -9,8 +9,6 @@ from data_processing.bccwj_dataset import BCCWJDataset, split_pared_bccwj
 from models.model import Encoder, Decoder, AutoEncoder
 
 SEED = 888
-PATH_TO_OUTPUT_CSV = "data/BCCWJ/pared_BCCWJ.csv"
-OUTPUT_CSV_LENGTH = 36396
 
 BATCH_SIZE = 64
 NUM_PANPHON_FEATURES = 24
