@@ -43,7 +43,8 @@ class Transcriber():
             for line in reader:
                 shorthand_char = line[0]
                 ipa = line[1]
-                fv = line[2:]
+                fv_as_strings = line[2:]
+                fv = [int(s) for s in fv_as_strings]
                 assert(shorthand_char not in self.shorthand_to_fv_dict) # make sure I made a good shorthand...
                 self.ipa_to_shorthand_dict[ipa] = shorthand_char
                 self.shorthand_to_fv_dict[shorthand_char] = fv
