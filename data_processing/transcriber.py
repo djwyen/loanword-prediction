@@ -275,6 +275,20 @@ class Transcriber():
             result.append(self.shorthand_to_fv_dict[c])
         return result
 
+    def greedy_select_segment(self, fv, weighted=False):
+        # returns the ipa character in Japanese with the closest fv representation
+        # to the given segment
+        least_distance = None
+        closest_seg = None
+        for c, vec in self.shorthand_to_fv_dict.items():
+            total = 0
+            for val1, val2 in zip(fv, vec):
+                total += (val1 - val2)**2
+            if least_distance is None or total < least_distance:
+                least_distance = total
+                closest_seg = c
+        return {v: k for k, v in self.ipa_to_shorthand.items()}[closest_seg]
+
     def katakana_to_romaji(self, word_in_katakana):
         # TODO implement similar to katakana_to_ipa; create a csv with the transcription equivalents (and special chars)
         pass
