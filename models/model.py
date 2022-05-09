@@ -113,9 +113,7 @@ class Decoder(nn.Module):
 
 class AutoEncoder(nn.Module):
     def __init__(self, seq_len, input_size, hidden_size,
-                 learning_rate, epochs, max_grad_norm,
-                 bidirectional=True,
-                 patience=20, every_epoch_print=10):
+                 bidirectional=True):
         super().__init__()
         
         self.seq_len = seq_len
@@ -126,12 +124,6 @@ class AutoEncoder(nn.Module):
 
         self.encoder = Encoder(self.seq_len, self.input_size, self.hidden_size, bidirectional=bidirectional)
         self.decoder = Decoder(self.seq_len, (directions * self.hidden_size), self.input_size)
-
-        self.learning_rate = learning_rate
-        self.epochs = epochs
-        self.max_grad_norm = max_grad_norm
-        self.patience = patience
-        self.every_epoch_print = every_epoch_print
 
     def forward(self, x):
         # x: (N, L, H_in) ie (N, L, input_size)
