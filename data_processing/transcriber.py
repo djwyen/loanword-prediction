@@ -16,6 +16,10 @@ class TranscriptionStyle:
 
 TRANSCRIPTION_STYLE = TranscriptionStyle.BROAD # can be set via a commandline argument, eventually
 
+# pulled from https://github.com/dmort27/panphon/blob/master/panphon/data/feature_weights.csv
+# some arbitrary weighting of the features
+FEATURE_WEIGHTS = [1,1,1,0.5,0.25,0.25,0.25,0.125,0.125,0.125,0.125,0.25,0.25,0.125,0.25,0.25,0.25,0.25,0.25,0.25,0.125,0.25,0,0]
+
 class Transcriber():
     """
     A class to wrap methods for converting Japanese words between scripts:
@@ -282,8 +286,8 @@ class Transcriber():
         closest_seg = None
         for c, vec in self.shorthand_to_fv_dict.items():
             total = 0
-            for val1, val2 in zip(fv, vec):
-                total += (val1 - val2)**2
+            for val1, val2, w in zip(fv, vec, FEATURE_WEIGHTS):
+                total += w * (val1 - val2)**2
             if least_distance is None or total < least_distance:
                 least_distance = total
                 closest_seg = c
