@@ -31,11 +31,7 @@ class TestModelDims(unittest.TestCase):
         # an actual autoencoder, too. We could have tested this autoencoder's own encoder/decoder
         # but that makes it a little harder to explicitly see their parameters.
         self.autoencoder = AutoEncoder(MAX_SEQ_LEN_WITH_STOP, NUM_PANPHON_FEATURES, HIDDEN_DIM,
-                                 learning_rate=1e-3,
-                                 every_epoch_print=10,
-                                 epochs=160,
-                                 patience=5,
-                                 max_grad_norm=0.005)
+                                       bidirectional=True)
 
     def test_data_dims(self):
         some_dataset_input = next(iter(self.dataset))
