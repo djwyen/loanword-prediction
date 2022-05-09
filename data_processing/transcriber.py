@@ -287,7 +287,9 @@ class Transcriber():
         for c, vec in self.shorthand_to_fv_dict.items():
             total = 0
             for val1, val2, w in zip(fv, vec, FEATURE_WEIGHTS):
-                total += w * (val1 - val2)**2
+                if not weighted:
+                    w = 1
+                total += w * ((val1 - val2)**2)
             if least_distance is None or total < least_distance:
                 least_distance = total
                 closest_seg = c
