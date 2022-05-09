@@ -64,6 +64,7 @@ class Encoder(nn.Module):
         # x: (N, L, H_in)
         self.eval()
         with torch.no_grad():
+            x = x.type(torch.FloatTensor)
             x, h_n = self.rnn(x) # x: (N, L, 2H_out)
                                  # h_n: (2, N, H_out)
         # concatenate the layers' hidden representations
