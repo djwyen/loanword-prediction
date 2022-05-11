@@ -16,7 +16,6 @@ SEED = 888
 torch.manual_seed(SEED)
 
 # TODO for now only supports bidirectional, all the code assumes it
-# TODO the dropout is only applied between layers so for 1 layer rnns this does nothing
 
 class Encoder(nn.Module):
     def __init__(self, seq_len, input_size, hidden_size, num_layers=1, bidirectional=True, dropout=0.):
@@ -79,7 +78,7 @@ class Decoder(nn.Module):
         self.rnn = nn.GRU(hidden_size, output_size, num_layers,
                            batch_first=True,
                            dropout=dropout)
-        # self.softmax = nn.LogSoftmax(dim = 1)
+        self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
         # x: (N, H_in)
@@ -88,6 +87,7 @@ class Decoder(nn.Module):
         x = x.repeat(1, self.seq_len, 1) # (N, L, H_in)
         x, h_n = self.rnn(x) # x: (N, L, H_out)
                              # h_n: (n_layers, N, H_out)
+        x = self.sigmoid(x) # x: (N, L, H_out)
         return x
 
     def decode(self, x):
@@ -95,12 +95,13 @@ class Decoder(nn.Module):
         # when decoding, we let the model potentially predict sequences twice as long
         # as the input. Hence, we concatenate x with itself to get a 2L long sequence.
         # x: (N, H_in) nb that in principle one can use this to decode many words at once, even though we typically only do one
-        x = x.unsqueeze(1) # (N, 1, H_in)
-        x = x.repeat(1, 2*self.seq_len, 1) # (N, 2*L, H_in)
         self.eval()
         with torch.no_grad():
+            x = x.unsqueeze(1) # (N, 1, H_in)
+            x = x.repeat(1, 2*self.seq_len, 1) # (N, 2*L, H_in)
             x, h_n = self.rnn(x) # x: (N, 2*L, H_out)
                                  # h_n: (n_layers, N, H_out)
+            x = self.sigmoid(x)
         self.train()
         return x
 
