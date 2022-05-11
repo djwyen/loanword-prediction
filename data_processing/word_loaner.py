@@ -19,12 +19,6 @@ class WordLoaner():
         self._ft = FeatureTable()
 
         self.FEATURES = ['syl', 'son', 'cons', 'cont', 'delrel', 'lat', 'nas', 'strid', 'voi', 'sg', 'cg', 'ant', 'cor', 'distr', 'lab', 'hi', 'lo', 'back', 'round', 'velaric', 'tense', 'long']
-    
-    def length_of_ipa(self, ipa):
-        '''
-        Quick helper function to compute the length of an ipa string by removing extraneous segments
-        '''
-        return len(ipa) - ipa.count('ː') - ipa.count('ʲ') - ipa.count('ç') - (2*ipa.count('d͡ʑ')) - (2*ipa.count('d͡z')) - (2*ipa.count('t͡ɕ')) - (2*ipa.count('t͡s')) - ipa.count('ɰ̃') - ipa.count('ĩ')
 
     def _pad_word(self, fv):
         # pads a word's feature vector to be a correctly formatted input to the model

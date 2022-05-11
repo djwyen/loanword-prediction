@@ -10,9 +10,7 @@ from math import floor
 import numpy as np
 import pandas as pd
 import torch
-from torch.utils.data import Dataset, DataLoader, random_split
-from .transcriber import Transcriber
-from .word import Word
+from torch.utils.data import Dataset, random_split
 
 # path to the pared BCCWJ dataset that is created by `process_bccwj.py`
 PATH_TO_PROCESSED_CSV = "data/BCCWJ/pared_BCCWJ.csv"
@@ -23,13 +21,6 @@ PAD_FV = [0] * NUM_PHONETIC_FEATURES
 END_FV = [2] * NUM_PHONETIC_FEATURES
 
 # TODO could refactor to transcribe from kana to ipa in the Dataset, which would allow passing transcription broadness as a flag to the constructor for the Dataset. Pared_BCCWJ would just be to pick out the relevant words, and not to pretranscribe them.
-
-def length_of_ipa(ipa):
-    '''
-    Quick helper function to compute the length of an ipa string by removing extraneous segments
-    '''
-    return len(ipa) - ipa.count('ː') - ipa.count('ʲ') - ipa.count('ç') - (2*ipa.count('d͡ʑ')) - (2*ipa.count('d͡z')) - (2*ipa.count('t͡ɕ')) - (2*ipa.count('t͡s')) - ipa.count('ɰ̃') - ipa.count('ĩ')
-
 
 class BCCWJDataset(Dataset):
     def __init__(self, indices, max_seq_len):

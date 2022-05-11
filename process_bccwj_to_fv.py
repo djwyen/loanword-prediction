@@ -7,6 +7,7 @@ import csv
 import pandas as pd
 import numpy as np
 from data_processing.transcriber import Transcriber
+from utils import segment_len_of_ipa
 
 PATH_TO_PROCESSED_CSV = "data/BCCWJ/pared_BCCWJ.csv"
 PATH_TO_FV_GZ = "data/BCCWJ/fv_pared_BCCWJ.gz"
@@ -30,7 +31,7 @@ def main():
             shorthand = t.ipa_to_shorthand(ipa)
             fv = t.shorthand_to_fv(shorthand)
 
-            length_diff = MAX_SEQ_LEN_NO_PAD - length_of_ipa(ipa)
+            length_diff = MAX_SEQ_LEN_NO_PAD - segment_len_of_ipa(ipa)
             fv.append(END_FV)
             for _ in range(length_diff):
                 fv.append(PAD_FV)
