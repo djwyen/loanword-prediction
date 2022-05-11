@@ -306,10 +306,6 @@ class Transcriber():
         See the panphon documentation for properties of Segment (https://github.com/dmort27/panphon)
         """
         ft = panphon.FeatureTable()
-        # try:
-        #     assert(ft.validate_word(word_in_ipa))
-        # except:
-        #     print(f'illegal word: {word_in_ipa}')
         return ft.word_fts(word_in_ipa)
 
     def ipa_to_feature_vectors(self, word_in_ipa):
@@ -317,8 +313,10 @@ class Transcriber():
         Converts a word in IPA to a numpy array of integers {+1,-1,0} corresponding to features.
         A given row corresponds to a segment's list of features. In that list, each index corresponds to a particular feature,
         and the value in {+1,-1,0} corresponds to the feature's value in the natural way.
+        We remove the last two features corresponding to tone, so the returned features are, in this order:
+        ['syl', 'son', 'cons', 'cont', 'delrel', 'lat', 'nas', 'strid', 'voi', 'sg', 'cg', 'ant', 'cor', 'distr', 'lab', 'hi', 'lo', 'back', 'round', 'velaric', 'tense', 'long']
         See the panphon documentation for specifics of the ordering of the features (https://github.com/dmort27/panphon)
         """
         ft = panphon.FeatureTable()
-        # assert(ft.validate_word(word_in_ipa))
-        return ft.word_to_vector_list(word_in_ipa, numeric=True) # TODO investigate role of "normalization"?
+        # we remove the last two features, which correspond to tone and aren't used in my modeling of Japanese
+        return [v[:-2] for v in ft.word_to_vector_list(word_in_ipa, numeric=True)] # TODO investigate role of "normalization"?
