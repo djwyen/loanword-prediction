@@ -53,7 +53,10 @@ def train_model(model, train_dataloader, val_dataloader, device,
                 num_epochs=100, learning_rate=1e-3):
     optimizer = torch.optim.Adam(model.parameters(), lr = learning_rate)
     # criterion = nn.MSELoss(reduction='mean')
-    weights_tensor = torch.tensor(np.array(FEATURE_WEIGHTS)).type(torch.FloatTensor)
+    triplicate_feature_weights = []
+    for x in FEATURE_WEIGHTS:
+        triplicate_feature_weights.extend([x, x, x])
+    weights_tensor = torch.tensor(np.array(triplicate_feature_weights)).type(torch.FloatTensor)
     criterion = nn.BCELoss(weight=weights_tensor, reduction='sum')
     
     history = dict(train=[], val=[])
