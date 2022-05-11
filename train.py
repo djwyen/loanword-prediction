@@ -14,12 +14,16 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # Parameters
 parameters = {'batch_size': 64,
               'shuffle': True,
-              'num_workers': 2}
-num_epochs = 2
-learning_rate = 1e-3
+              'num_workers': 2,
+              'num_epochs': 100,
+              'learning_rate': 1e-3,
+              'encoder_layers': 3,
+              'decoder_layers': 3,
+              'encoder_dropout': 0.1,
+              'decoder_dropout': 0.3}
 
 # parameters for splitting up the dataset
-random_seed = 888
+SEED = 888
 frac_test = 0.1
 printout_freq = 1500 # print every 1500th word during training; should give 24 printouts
 
@@ -102,7 +106,7 @@ def train_model(model, train_dataloader, val_dataloader, device,
 
 def main():
     # data
-    train_dataset, val_dataset = split_pared_bccwj(random_seed, 0.1, MAX_SEQ_LEN_WITHOUT_EOW)
+    train_dataset, val_dataset = split_pared_bccwj(SEED, frac_test, MAX_SEQ_LEN_WITHOUT_EOW)
 
     train_dataloader = DataLoader(train_dataset,
                                 batch_size=parameters['batch_size'],
@@ -113,10 +117,16 @@ def main():
 
 
     # model
-    model = AutoEncoder(MAX_SEQ_LEN_WITH_EOW, N_FEATURES, HIDDEN_DIM, bidirectional=True)
+    model = AutoEncoder(MAX_SEQ_LEN_WITH_EOW, N_FEATURES, HIDDEN_DIM,
+                        n_encoder_layers=parameters['encoder_layers'],
+                        n_decoder_layers=parameters['decoder_layers'],
+                        bidirectional=True,
+                        enc_dropout=parameters['encoder_dropout'],
+                        dec_dropout=parameters['decoder_dropout'])
 
     trained_model, history = train_model(model, train_dataloader, val_dataloader, device,
-                                         num_epochs=num_epochs, learning_rate=learning_rate)
+                                         num_epochs=parameters['num_epochs'],
+                                         learning_rate=parameters['learning_rate'])
     torch.save(trained_model.state_dict(), './finished_checkpoint.pt')
 
 
