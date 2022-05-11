@@ -24,7 +24,7 @@ PAD_MULTIHOT_FV = [1] * NUM_PHONETIC_FEATURES * CATEGORIES_PER_FEATURE
 # TODO could refactor to transcribe from kana to ipa in the Dataset, which would allow passing transcription broadness as a flag to the constructor for the Dataset. Pared_BCCWJ would just be to pick out the relevant words, and not to pretranscribe them.
 
 class BCCWJDataset(Dataset):
-    def __init__(self, indices, max_seq_len):
+    def __init__(self, indices=list(range(36396)), max_seq_len=20): # hardcoded values true as of May 11
         # note: The max_seq_len here is the length of the longest sequence without the end-of-word token,
         #       which is something this module adds itself.
         #       However, the property max_seq_len it will be constructed with will be the correct length
