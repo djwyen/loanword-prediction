@@ -14,7 +14,6 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # Parameters
 parameters = {'batch_size': 64,
               'shuffle': True,
-              'num_workers': 2,
               'num_epochs': 100,
               'learning_rate': 1e-3,
               'encoder_layers': 3,
