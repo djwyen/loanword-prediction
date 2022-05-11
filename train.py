@@ -119,7 +119,7 @@ def main():
     model = AutoEncoder(MAX_SEQ_LEN_WITH_EOW, NUM_PHONETIC_FEATURES, HIDDEN_DIM,
                         n_encoder_layers=parameters['encoder_layers'],
                         n_decoder_layers=parameters['decoder_layers'],
-                        bidirectional=True,
+                        bidirectional_encoder=True,
                         enc_dropout=parameters['encoder_dropout'],
                         dec_dropout=parameters['decoder_dropout'])
 
