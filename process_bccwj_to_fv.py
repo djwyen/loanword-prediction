@@ -4,7 +4,6 @@ Created because I realized that panphon transcriptions took up significant overh
 a PyTorch dataloader and made my model unable to train at any reasonable rate.
 """
 import csv
-import pandas as pd
 import numpy as np
 from data_processing.transcriber import Transcriber
 from utils import segment_len_of_ipa
