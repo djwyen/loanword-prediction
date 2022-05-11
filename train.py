@@ -57,7 +57,7 @@ def train_model(model, train_dataloader, val_dataloader, device,
     for x in FEATURE_WEIGHTS:
         triplicate_feature_weights.extend([x, x, x])
     weights_tensor = torch.tensor(np.array(triplicate_feature_weights)).type(torch.FloatTensor)
-    criterion = nn.BCELoss(weight=weights_tensor, reduction='sum')
+    criterion = nn.BCEWithLogitsLoss(weight=weights_tensor, reduction='sum')
     
     history = dict(train=[], val=[])
 

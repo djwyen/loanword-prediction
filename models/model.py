@@ -77,7 +77,6 @@ class Decoder(nn.Module):
         self.rnn = nn.GRU(hidden_size, output_size, num_layers,
                            batch_first=True,
                            dropout=dropout)
-        self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
         # x: (N, H_in)
@@ -86,7 +85,6 @@ class Decoder(nn.Module):
         x = x.repeat(1, self.seq_len, 1) # (N, L, H_in)
         x, h_n = self.rnn(x) # x: (N, L, H_out)
                              # h_n: (n_layers, N, H_out)
-        x = self.sigmoid(x) # x: (N, L, H_out)
         return x
 
     def decode(self, x):
@@ -100,7 +98,6 @@ class Decoder(nn.Module):
             x = x.repeat(1, 2*self.seq_len, 1) # (N, 2*L, H_in)
             x, h_n = self.rnn(x) # x: (N, 2*L, H_out)
                                  # h_n: (n_layers, N, H_out)
-            x = self.sigmoid(x)
         self.train()
         return x
 
