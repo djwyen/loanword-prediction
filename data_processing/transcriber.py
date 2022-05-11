@@ -280,6 +280,31 @@ class Transcriber():
             result.append(self.shorthand_to_fv_dict[c])
         return result
 
+    def fv_to_multihot(self, fvs):
+        """
+        Converts a list of feature vectors in their numeric forms
+        (an entry for each feature; entry equal to +1, -1, 0 for +, -, 0 on that feature, respectively)
+        to a list of their multi-hot vector equivalents.
+        That is, we convert each feature to a one hot vector, then concatenate the one-hots into a multi-hot vector.
+
+        Strictly speaking this isn't a multilabel vector, as the entries of these vectors
+        are not mutually independent. Having a 1 in the [+ant] entry necessarily
+        implies having 0's in the [-ant] and [0ant] entries, even if these three entries
+        are indeed independent of the entries for, say, [son].
+        """
+        val_to_onehot = {
+            1: [1, 0, 0],
+            -1: [0, 1, 0],
+            0: [0, 0, 1]
+        }
+        result = []
+        for fv in fvs:
+            multihot_fv = []
+            for feature_val in fv:
+                multihot_fv.extend(val_to_onehot[feature_val])
+            result.append(multihot_fv)
+        return result
+
     def greedy_select_segment(self, fv, weighted=True):
         # returns the ipa character in Japanese with the closest fv representation
         # to the given segment
