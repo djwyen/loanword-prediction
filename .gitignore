@@ -2,3 +2,4 @@
 __pycache__/
 explore_bccwj.py
 explore_processed_bccwj.py
+.DS_Store
