@@ -18,7 +18,8 @@ TRANSCRIPTION_STYLE = TranscriptionStyle.BROAD # can be set via a commandline ar
 
 # pulled from https://github.com/dmort27/panphon/blob/master/panphon/data/feature_weights.csv
 # some arbitrary weighting of the features
-FEATURE_WEIGHTS = [1,1,1,0.5,0.25,0.25,0.25,0.125,0.125,0.125,0.125,0.25,0.25,0.125,0.25,0.25,0.25,0.25,0.25,0.25,0.125,0.25,0,0]
+FEATURE_WEIGHTS = [1,1,1,0.5,0.25,0.25,0.25,0.125,0.125,0.125,0.125,0.25,0.25,0.125,0.25,0.25,0.25,0.25,0.25,0.25,0.125,0.25]
+NUM_PHONETIC_FEATURES = 22
 
 class Transcriber():
     """

@@ -5,7 +5,7 @@ from panphon.segment import Segment
 
 from .transcriber import Transcriber
 
-NUM_OF_PANPHON_FEATURES = 24
+NUM_PHONETIC_FEATURES = 22 # Panphon gives 24 by default, but we remove the last two, which correspond to tone
 MAX_SEQ_LEN_NO_PAD = 20
 
 class WordLoaner():
@@ -18,7 +18,7 @@ class WordLoaner():
         self._t = Transcriber()
         self._ft = FeatureTable()
 
-        self.FEATURES = ['syl', 'son', 'cons', 'cont', 'delrel', 'lat', 'nas', 'strid', 'voi', 'sg', 'cg', 'ant', 'cor', 'distr', 'lab', 'hi', 'lo', 'back', 'round', 'velaric', 'tense', 'long', 'hitone', 'hireg']
+        self.FEATURES = ['syl', 'son', 'cons', 'cont', 'delrel', 'lat', 'nas', 'strid', 'voi', 'sg', 'cg', 'ant', 'cor', 'distr', 'lab', 'hi', 'lo', 'back', 'round', 'velaric', 'tense', 'long']
     
     def length_of_ipa(self, ipa):
         '''
@@ -28,8 +28,8 @@ class WordLoaner():
 
     def _pad_word(self, fv):
         # pads a word's feature vector to be a correctly formatted input to the model
-        PAD_FV = [0] * NUM_OF_PANPHON_FEATURES
-        END_FV = [2] * NUM_OF_PANPHON_FEATURES
+        PAD_FV = [0] * NUM_PHONETIC_FEATURES
+        END_FV = [2] * NUM_PHONETIC_FEATURES
 
         length_diff = MAX_SEQ_LEN_NO_PAD - len(fv)
         fv.append(END_FV)

@@ -27,14 +27,14 @@ SEED = 888
 frac_test = 0.1
 printout_freq = 1500 # print every 1500th word during training; should give 24 printouts
 
-N_FEATURES = 24 # from how panphon works by default
+NUM_PHONETIC_FEATURES = 22 # from how panphon works by default minus the two phonetic features
 HIDDEN_DIM = 32 # remember that the hidden state must contain the entire sequence, somehow
 MAX_SEQ_LEN_WITHOUT_EOW = 20
 MAX_SEQ_LEN_WITH_EOW = MAX_SEQ_LEN_WITHOUT_EOW + 1
 
 # pulled from https://github.com/dmort27/panphon/blob/master/panphon/data/feature_weights.csv
 # some arbitrary weighting of the features
-FEATURE_WEIGHTS = [1,1,1,0.5,0.25,0.25,0.25,0.125,0.125,0.125,0.125,0.25,0.25,0.125,0.25,0.25,0.25,0.25,0.25,0.25,0.125,0.25,0,0]
+FEATURE_WEIGHTS = [1,1,1,0.5,0.25,0.25,0.25,0.125,0.125,0.125,0.125,0.25,0.25,0.125,0.25,0.25,0.25,0.25,0.25,0.25,0.125,0.25]
 
 def weighted_loss(prediction, target):
     weight_tensor = np.array(FEATURE_WEIGHTS)
@@ -117,7 +117,7 @@ def main():
 
 
     # model
-    model = AutoEncoder(MAX_SEQ_LEN_WITH_EOW, N_FEATURES, HIDDEN_DIM,
+    model = AutoEncoder(MAX_SEQ_LEN_WITH_EOW, NUM_PHONETIC_FEATURES, HIDDEN_DIM,
                         n_encoder_layers=parameters['encoder_layers'],
                         n_decoder_layers=parameters['decoder_layers'],
                         bidirectional=True,

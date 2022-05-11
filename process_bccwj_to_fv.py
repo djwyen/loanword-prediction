@@ -12,15 +12,9 @@ PATH_TO_PROCESSED_CSV = "data/BCCWJ/pared_BCCWJ.csv"
 PATH_TO_FV_GZ = "data/BCCWJ/fv_pared_BCCWJ.gz"
 
 MAX_SEQ_LEN_NO_PAD = 20
-NUM_OF_PANPHON_FEATURES = 24
-PAD_FV = [0] * NUM_OF_PANPHON_FEATURES
-END_FV = [2] * NUM_OF_PANPHON_FEATURES
-
-def length_of_ipa(ipa):
-    '''
-    Quick helper function to compute the length of an ipa string by removing extraneous segments
-    '''
-    return len(ipa) - ipa.count('ː') - ipa.count('ʲ') - ipa.count('ç') - (2*ipa.count('d͡ʑ')) - (2*ipa.count('d͡z')) - (2*ipa.count('t͡ɕ')) - (2*ipa.count('t͡s')) - ipa.count('ɰ̃') - ipa.count('ĩ')
+NUM_PHONETIC_FEATURES = 22 # note that Panphon by default gives you 24 features, but the last two corresond to tone so I drop them
+PAD_FV = [0] * NUM_PHONETIC_FEATURES
+END_FV = [2] * NUM_PHONETIC_FEATURES
 
 def main():
     # the huge array that will store a representation of each word

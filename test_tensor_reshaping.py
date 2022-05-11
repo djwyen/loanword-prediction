@@ -4,7 +4,7 @@ import torch
 import numpy as np
 
 BATCH_SIZE = 64
-NUM_PANPHON_FEATURES = 24
+NUM_PHONETIC_FEATURES = 22
 HIDDEN_DIM = 32
 MAX_SEQ_LEN_NO_STOP = 20
 MAX_SEQ_LEN_WITH_STOP = MAX_SEQ_LEN_NO_STOP + 1 # due to the added stop token at the end

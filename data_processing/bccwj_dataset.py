@@ -18,9 +18,9 @@ from .word import Word
 PATH_TO_PROCESSED_CSV = "data/BCCWJ/pared_BCCWJ.csv"
 PATH_TO_PROCESSED_GZ = "data/BCCWJ/fv_pared_BCCWJ.gz"
 
-NUM_OF_PANPHON_FEATURES = 24 # there are 24 features output by panphon by default transcription
-PAD_FV = [0] * NUM_OF_PANPHON_FEATURES
-END_FV = [2] * NUM_OF_PANPHON_FEATURES
+NUM_PHONETIC_FEATURES = 22 # there are 24 features output by panphon by default transcription, but minus the two tonal features
+PAD_FV = [0] * NUM_PHONETIC_FEATURES
+END_FV = [2] * NUM_PHONETIC_FEATURES
 
 # TODO could refactor to transcribe from kana to ipa in the Dataset, which would allow passing transcription broadness as a flag to the constructor for the Dataset. Pared_BCCWJ would just be to pick out the relevant words, and not to pretranscribe them.
 
@@ -57,7 +57,7 @@ class BCCWJDataset(Dataset):
         # we have to unflatten each word
         flat_word = self.vocab_nparray[true_idx, :]
         # unflatten to be a list of segment feature vectors
-        feature_vectors = flat_word.reshape((self.max_seq_len, NUM_OF_PANPHON_FEATURES))
+        feature_vectors = flat_word.reshape((self.max_seq_len, NUM_PHONETIC_FEATURES))
 
         return feature_vectors
 

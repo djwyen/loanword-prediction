@@ -10,7 +10,7 @@ from data_processing.transcriber import Transcriber
 OUTPUT_CSV_LENGTH = 36396 # as of last generation
 MAX_SEQ_LEN_NO_PAD = 20
 MAX_SEQ_LEN_WITH_PAD = 21
-N_FEATURES = 24
+NUM_PHONETIC_FEATURES = 22
 
 
 class TestTranscriber(unittest.TestCase):
@@ -56,7 +56,7 @@ class TestWord(unittest.TestCase):
 
     def test_feature_vectors(self):
         feature_vectors = self._t.ipa_to_feature_vectors(self.w.ipa)
-        a_features = [1, 1, -1, 1, -1, -1, -1, 0, 1, -1, -1, 0, -1, 0, -1, -1, 1, -1, -1, -1, 1, -1, 0, 0]
+        a_features = [1, 1, -1, 1, -1, -1, -1, 0, 1, -1, -1, 0, -1, 0, -1, -1, 1, -1, -1, -1, 1, -1]
         self.assertEqual(feature_vectors[4], a_features, 'Feature vectors not identical')
 
 class TestDataset(unittest.TestCase):
@@ -72,11 +72,11 @@ class TestDataset(unittest.TestCase):
     
     def test_accesses(self):
         first_access = self.dataset[0]
-        self.assertEqual(first_access.shape, (MAX_SEQ_LEN_WITH_PAD, N_FEATURES))
+        self.assertEqual(first_access.shape, (MAX_SEQ_LEN_WITH_PAD, NUM_PHONETIC_FEATURES))
         self.assertTrue(all([(lambda x: x == 2) for x in first_access[-1, :]])) # ie the EOW token
 
         middle_access = self.dataset[17511]
-        self.assertEqual(middle_access.shape, (MAX_SEQ_LEN_WITH_PAD, N_FEATURES))
+        self.assertEqual(middle_access.shape, (MAX_SEQ_LEN_WITH_PAD, NUM_PHONETIC_FEATURES))
         self.assertTrue(all([(lambda x: x == 2) for x in middle_access[-1, :]])) # ie the EOW token
 
 
