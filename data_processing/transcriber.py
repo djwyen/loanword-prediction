@@ -279,7 +279,7 @@ class Transcriber():
         for c in shorthand:
             result.append(self.shorthand_to_fv_dict[c])
         return result
-
+    
     def fv_to_multihot(self, fvs):
         """
         Converts a list of feature vectors in their numeric forms

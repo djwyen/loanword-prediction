@@ -16,9 +16,10 @@ from torch.utils.data import Dataset, random_split
 PATH_TO_PROCESSED_CSV = "data/BCCWJ/pared_BCCWJ.csv"
 PATH_TO_PROCESSED_GZ = "data/BCCWJ/fv_pared_BCCWJ.gz"
 
-NUM_PHONETIC_FEATURES = 22 # there are 24 features output by panphon by default transcription, but minus the two tonal features
-PAD_FV = [0] * NUM_PHONETIC_FEATURES
-END_FV = [2] * NUM_PHONETIC_FEATURES
+NUM_PHONETIC_FEATURES = 22 # Panphon by default gives you 24 features, but the last two corresond to tonal features so I drop them
+CATEGORIES_PER_FEATURE = 3 # the categories being {+, -, 0} in that order
+END_MULTIHOT_FV = [0] * NUM_PHONETIC_FEATURES * CATEGORIES_PER_FEATURE
+PAD_MULTIHOT_FV = [1] * NUM_PHONETIC_FEATURES * CATEGORIES_PER_FEATURE
 
 # TODO could refactor to transcribe from kana to ipa in the Dataset, which would allow passing transcription broadness as a flag to the constructor for the Dataset. Pared_BCCWJ would just be to pick out the relevant words, and not to pretranscribe them.
 
@@ -42,13 +43,12 @@ class BCCWJDataset(Dataset):
         '''
         Returns items as NumPy Arrays, padded to be of the max seq len
         '''
-        # assert index is less than length?
+        # TODO assert index is less than length?
         true_idx = self.indices[idx] # the index of the item in pared_BCCWJ we are retrieving
-
-        # we have to unflatten each word
+        # we have to unflatten the retrieved word from a single vector into a list of segmental feature vectors
         flat_word = self.vocab_nparray[true_idx, :]
-        # unflatten to be a list of segment feature vectors
-        feature_vectors = flat_word.reshape((self.max_seq_len, NUM_PHONETIC_FEATURES))
+        # unflatten to be a list of segment multihot feature vectors.
+        feature_vectors = flat_word.reshape((self.max_seq_len, CATEGORIES_PER_FEATURE*NUM_PHONETIC_FEATURES))
 
         return feature_vectors
 
