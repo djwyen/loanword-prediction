@@ -90,7 +90,6 @@ class TestDataset(unittest.TestCase):
         self.assertTrue(all([(x == 1) for x in first_access[-1, :]])) # ie a PAD token
 
         middle_access = self.dataset[17511]
-        print(middle_access)
         self.assertEqual(middle_access.shape, (MAX_SEQ_LEN_WITH_PAD, NUM_PHONETIC_FEATURES))
         self.assertTrue(all([(x == 1) for x in middle_access[-1, :]])) # ie a PAD token
 
