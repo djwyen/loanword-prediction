@@ -47,7 +47,7 @@ class BCCWJDataset(Dataset):
         # we have to unflatten the retrieved word from a single vector into a list of segmental feature vectors
         flat_word = self.vocab_nparray[true_idx, :]
         # unflatten to be a list of segment multihot feature vectors.
-        feature_vectors = flat_word.reshape((self.max_seq_len, CATEGORIES_PER_FEATURE))
+        feature_vectors = flat_word.reshape((self.max_seq_len, NUM_PHONETIC_FEATURES))
 
         return feature_vectors
 
