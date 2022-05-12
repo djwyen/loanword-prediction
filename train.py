@@ -66,7 +66,7 @@ def train_model(model, train_dataloader, val_dataloader, device,
         # train
         train_losses = []
         model.train()
-        for target in train_dataloader:
+        for target, tgt_lengths in train_dataloader:
             optimizer.zero_grad()
             target = target.to(device)
             _encoded, prediction = model(target)
@@ -83,7 +83,7 @@ def train_model(model, train_dataloader, val_dataloader, device,
         val_losses = []
         model.eval()
         with torch.no_grad():
-            for target in val_dataloader:
+            for i, (target, tgt_lengths) in enumerate(val_dataloader):
                 target = target.to(device)
                 _encoded, prediction = model(target)
 
@@ -91,7 +91,7 @@ def train_model(model, train_dataloader, val_dataloader, device,
                 loss = criterion(prediction, target)
                 val_losses.append(loss.item())
 
-                if epoch % print_every_n_epochs == 0:
+                if (i == 0) and (epoch % print_every_n_epochs == 0):
                     print('---')
                     print('fv of first segment of first word in validation batch:')
                     print('prediction:')

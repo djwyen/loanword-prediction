@@ -14,6 +14,9 @@ from torch.utils.data import Dataset, random_split
 # path to the pared BCCWJ dataset that is created by `process_bccwj.py`
 PATH_TO_PROCESSED_CSV = "data/BCCWJ/pared_BCCWJ.csv"
 PATH_TO_PROCESSED_GZ = "data/BCCWJ/fv_pared_BCCWJ.gz"
+PATH_TO_LENGTHS_GZ = "data/BCCWJ/BCCWJ_lengths.gz"
+
+MAX_SEQ_LEN_NO_PAD = 20
 
 NUM_PHONETIC_FEATURES = 22 # Panphon by default gives you 24 features, but the last two corresond to tonal features so I drop them
 CATEGORIES_PER_FEATURE = 3 # the categories being {+, -, 0} in that order
@@ -29,6 +32,7 @@ class BCCWJDataset(Dataset):
         #       However, the property max_seq_len it will be constructed with will be the correct length
         #       of the longest sequence, which includes the +1.
         self.vocab_nparray = np.loadtxt(PATH_TO_PROCESSED_GZ)
+        self.lengths_nparray = np.loadtxt(PATH_TO_LENGTHS_GZ)
         # by the way that the np array was saved, each entry is a flattened version
         # of the word; ie it was flattened from (MAX_LEN, N_FEATURES) to just (MAX_LEN * N_FEATURES)
         # so you need to reshape to recover it, which we can perform in __item__
@@ -40,7 +44,7 @@ class BCCWJDataset(Dataset):
 
     def __getitem__(self, idx):
         '''
-        Returns items as NumPy Arrays, padded to be of the max seq len
+        Returns items as NumPy Arrays, padded to be of the max seq len; and the length of the underlying word
         '''
         # TODO assert index is less than length?
         true_idx = self.indices[idx] # the index of the item in pared_BCCWJ we are retrieving
@@ -48,8 +52,9 @@ class BCCWJDataset(Dataset):
         flat_word = self.vocab_nparray[true_idx, :]
         # unflatten to be a list of segment multihot feature vectors.
         feature_vectors = flat_word.reshape((self.max_seq_len, NUM_PHONETIC_FEATURES))
+        word_length = self.lengths_nparray[true_idx]
 
-        return feature_vectors
+        return feature_vectors, word_length
 
 
 def split_pared_bccwj(seed, frac, max_seq_len=None):
