@@ -14,8 +14,8 @@ PATH_TO_FV_GZ = "data/BCCWJ/fv_pared_BCCWJ.gz"
 MAX_SEQ_LEN_NO_PAD = 20
 NUM_PHONETIC_FEATURES = 22 # Panphon by default gives you 24 features, but the last two corresond to tonal features so I drop them
 CATEGORIES_PER_FEATURE = 3 # the categories being {+, -, 0} in that order
-END_MULTIHOT_FV = [0] * NUM_PHONETIC_FEATURES
-PAD_MULTIHOT_FV = [1] * NUM_PHONETIC_FEATURES
+END_BINARY_FV = [0] * NUM_PHONETIC_FEATURES
+PAD_BINARY_FV = [1] * NUM_PHONETIC_FEATURES
 
 def main():
     # the huge array that will store a representation of each word
@@ -30,13 +30,13 @@ def main():
             ipa = line[2]
             shorthand = t.ipa_to_shorthand(ipa)
             fv = t.shorthand_to_fv(shorthand)
-            fv = t.fv_to_multihot(fv)
+            fv = t.fv_to_binary_fv(fv)
 
             # add the end-of-word token and then pad to the max seq length
             length_diff = MAX_SEQ_LEN_NO_PAD - segment_len_of_ipa(ipa)
-            fv.append(END_MULTIHOT_FV)
+            fv.append(END_BINARY_FV)
             for _ in range(length_diff):
-                fv.append(PAD_MULTIHOT_FV)
+                fv.append(PAD_BINARY_FV)
 
             # flatten the word by concatenating its feature vectors into one list
             flat_fv = []
