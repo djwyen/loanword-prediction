@@ -87,12 +87,12 @@ class TestDataset(unittest.TestCase):
     def test_accesses(self):
         first_access = self.dataset[0]
         self.assertEqual(first_access.shape, (MAX_SEQ_LEN_WITH_PAD, NUM_PHONETIC_FEATURES))
-        self.assertTrue(all([(x == 0) for x in first_access[-1, :]])) # ie a PAD token
+        self.assertTrue(all([(x == 1) for x in first_access[-1, :]])) # ie a PAD token
 
         middle_access = self.dataset[17511]
         print(middle_access)
         self.assertEqual(middle_access.shape, (MAX_SEQ_LEN_WITH_PAD, NUM_PHONETIC_FEATURES))
-        self.assertTrue(all([(x == 0) for x in middle_access[-1, :]])) # ie a PAD token
+        self.assertTrue(all([(x == 1) for x in middle_access[-1, :]])) # ie a PAD token
 
 
 if __name__ == '__main__':
