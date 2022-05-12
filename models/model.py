@@ -74,8 +74,7 @@ class Decoder(nn.Module):
         self.hidden_size = hidden_size
         self.output_size = output_size
 
-        self.bridge = nn.Sigmoid()
-
+        self.bridge = nn.ReLU()
         self.rnn = nn.GRU(hidden_size, output_size, num_layers,
                            batch_first=True,
                            dropout=dropout)
