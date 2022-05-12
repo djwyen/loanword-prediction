@@ -74,6 +74,8 @@ class Decoder(nn.Module):
         self.hidden_size = hidden_size
         self.output_size = output_size
 
+        self.bridge = nn.Sigmoid()
+
         self.rnn = nn.GRU(hidden_size, output_size, num_layers,
                            batch_first=True,
                            dropout=dropout)
@@ -81,6 +83,7 @@ class Decoder(nn.Module):
     def forward(self, x):
         # x: (N, H_in)
         # we need to copy the hidden state tensor L times for the L decodes:
+        x = self.bridge(x) # (N, H_in)
         x = x.unsqueeze(1) # (N, 1, H_in)
         x = x.repeat(1, self.seq_len, 1) # (N, L, H_in)
         x, h_n = self.rnn(x) # x: (N, L, H_out)
@@ -94,6 +97,7 @@ class Decoder(nn.Module):
         # x: (N, H_in) nb that in principle one can use this to decode many words at once, even though we typically only do one
         self.eval()
         with torch.no_grad():
+            x = self.bridge(x) # (N, H_in)
             x = x.unsqueeze(1) # (N, 1, H_in)
             x = x.repeat(1, 2*self.seq_len, 1) # (N, 2*L, H_in)
             x, h_n = self.rnn(x) # x: (N, 2*L, H_out)
