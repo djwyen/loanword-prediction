@@ -20,8 +20,8 @@ MAX_SEQ_LEN_NO_PAD = 20
 
 NUM_PHONETIC_FEATURES = 22 # Panphon by default gives you 24 features, but the last two corresond to tonal features so I drop them
 CATEGORIES_PER_FEATURE = 3 # the categories being {+, -, 0} in that order
-END_BINARY_FV = [0] * NUM_PHONETIC_FEATURES
-PAD_BINARY_FV = [1] * NUM_PHONETIC_FEATURES
+END_BINARY_FV = [1] * NUM_PHONETIC_FEATURES
+PAD_BINARY_FV = [0] * NUM_PHONETIC_FEATURES
 
 # TODO could refactor to transcribe from kana to ipa in the Dataset, which would allow passing transcription broadness as a flag to the constructor for the Dataset. Pared_BCCWJ would just be to pick out the relevant words, and not to pretranscribe them.
 
