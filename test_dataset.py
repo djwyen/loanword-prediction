@@ -24,9 +24,6 @@ class TestTranscriber(unittest.TestCase):
     #   yotsugana realization word-initially and intervocalically
     def setUp(self):
         self.t = Transcriber()
-    
-    # def test_kana_to_intermediate(self):
-    #     pass
 
     def test_katakana_to_ipa(self):
         self.assertEqual(self.t.katakana_to_ipa('オトナ'), 'otona')
@@ -36,6 +33,22 @@ class TestTranscriber(unittest.TestCase):
         self.assertEqual(self.t.katakana_to_ipa('キョウシツ'), 'kʲoːɕit͡sɯ') # tests glide substitution, affricate joining
         self.assertEqual(self.t.katakana_to_ipa('ジコウ'), 'd͡ʑikoː') # tests word initial yotsugana
         self.assertEqual(self.t.katakana_to_ipa('コンバンハ'), 'kombaɰ̃ɰa') # TODO this depends on how broad the transcription is
+
+    def test_fv_to_binary_fv(self):
+        # for a putative 4 phonetic feature vector set
+        fvs = [[1, -1, 0, 1],
+               [-1, -1, 1, 1],
+               [0, 0, 0, -1],
+               [0, 1, 1, 1],
+               [1, 0, -1, 0]]
+        binary_target = [[1, 0, 0, 1],
+                         [0, 0, 1, 1],
+                         [0, 0, 0, 0],
+                         [0, 1, 1, 1],
+                         [1, 0, 0, 0]]
+        binary_fvs = self.t.fv_to_binary_fv(fvs)
+        self.assertEqual(binary_fvs, binary_target)
+
 
 class TestWord(unittest.TestCase):
     def setUp(self):
@@ -61,7 +74,7 @@ class TestWord(unittest.TestCase):
 
 class TestDataset(unittest.TestCase):
     def setUp(self):
-        self.dataset = BCCWJDataset(range(OUTPUT_CSV_LENGTH), MAX_SEQ_LEN_NO_PAD)
+        self.dataset = BCCWJDataset()
 
     def test_size(self):
         self.assertEqual(len(self.dataset), OUTPUT_CSV_LENGTH)
@@ -69,15 +82,17 @@ class TestDataset(unittest.TestCase):
     def test_output_dims(self):
         entry = next(iter(self.dataset))
         self.assertIsInstance(entry, np.ndarray)
+        self.assertEqual(entry.shape, (MAX_SEQ_LEN_WITH_PAD, NUM_PHONETIC_FEATURES))
     
     def test_accesses(self):
         first_access = self.dataset[0]
         self.assertEqual(first_access.shape, (MAX_SEQ_LEN_WITH_PAD, NUM_PHONETIC_FEATURES))
-        self.assertTrue(all([(lambda x: x == 2) for x in first_access[-1, :]])) # ie the EOW token
+        self.assertTrue(all([(x == 0) for x in first_access[-1, :]])) # ie a PAD token
 
         middle_access = self.dataset[17511]
+        print(middle_access)
         self.assertEqual(middle_access.shape, (MAX_SEQ_LEN_WITH_PAD, NUM_PHONETIC_FEATURES))
-        self.assertTrue(all([(lambda x: x == 2) for x in middle_access[-1, :]])) # ie the EOW token
+        self.assertTrue(all([(x == 0) for x in middle_access[-1, :]])) # ie a PAD token
 
 
 if __name__ == '__main__':
