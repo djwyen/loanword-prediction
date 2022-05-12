@@ -17,8 +17,8 @@ PATH_TO_PROCESSED_GZ = "data/BCCWJ/fv_pared_BCCWJ.gz"
 
 NUM_PHONETIC_FEATURES = 22 # Panphon by default gives you 24 features, but the last two corresond to tonal features so I drop them
 CATEGORIES_PER_FEATURE = 3 # the categories being {+, -, 0} in that order
-END_MULTIHOT_FV = [0] * NUM_PHONETIC_FEATURES * CATEGORIES_PER_FEATURE
-PAD_MULTIHOT_FV = [1] * NUM_PHONETIC_FEATURES * CATEGORIES_PER_FEATURE
+END_MULTIHOT_FV = [0] * NUM_PHONETIC_FEATURES
+PAD_MULTIHOT_FV = [1] * NUM_PHONETIC_FEATURES
 
 # TODO could refactor to transcribe from kana to ipa in the Dataset, which would allow passing transcription broadness as a flag to the constructor for the Dataset. Pared_BCCWJ would just be to pick out the relevant words, and not to pretranscribe them.
 
@@ -47,7 +47,7 @@ class BCCWJDataset(Dataset):
         # we have to unflatten the retrieved word from a single vector into a list of segmental feature vectors
         flat_word = self.vocab_nparray[true_idx, :]
         # unflatten to be a list of segment multihot feature vectors.
-        feature_vectors = flat_word.reshape((self.max_seq_len, CATEGORIES_PER_FEATURE*NUM_PHONETIC_FEATURES))
+        feature_vectors = flat_word.reshape((self.max_seq_len, CATEGORIES_PER_FEATURE))
 
         return feature_vectors
 

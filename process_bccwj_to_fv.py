@@ -14,8 +14,8 @@ PATH_TO_FV_GZ = "data/BCCWJ/fv_pared_BCCWJ.gz"
 MAX_SEQ_LEN_NO_PAD = 20
 NUM_PHONETIC_FEATURES = 22 # Panphon by default gives you 24 features, but the last two corresond to tonal features so I drop them
 CATEGORIES_PER_FEATURE = 3 # the categories being {+, -, 0} in that order
-END_MULTIHOT_FV = [0] * NUM_PHONETIC_FEATURES * CATEGORIES_PER_FEATURE
-PAD_MULTIHOT_FV = [1] * NUM_PHONETIC_FEATURES * CATEGORIES_PER_FEATURE
+END_MULTIHOT_FV = [0] * NUM_PHONETIC_FEATURES
+PAD_MULTIHOT_FV = [1] * NUM_PHONETIC_FEATURES
 
 def main():
     # the huge array that will store a representation of each word

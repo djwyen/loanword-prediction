@@ -273,13 +273,23 @@ class Transcriber():
 
     def shorthand_to_fv(self, shorthand):
         '''
-        Converts a word in shorthand to a list of numbers denoting its features
+        Converts a word in shorthand to a list of its segments' feature vectors
         '''
         result = []
         for c in shorthand:
             result.append(self.shorthand_to_fv_dict[c])
         return result
-    
+
+    def fv_to_binary_fv(self, fvs):
+        '''
+        Converts a normal list of feature vectors, which has values in {-1, 0, +1},
+        to a binary fv with values only in {0, 1}; the -1s are compressed to 0
+        '''
+        result = []
+        for fv in fvs:
+            result.append([1 if v == 1 else 0 for v in fv])
+        return result
+
     def fv_to_multihot(self, fvs):
         """
         Converts a list of feature vectors in their numeric forms
