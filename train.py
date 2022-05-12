@@ -2,6 +2,7 @@ import numpy as np
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
@@ -50,13 +51,13 @@ def weighted_loss(prediction, target):
 
 # largely based off of https://curiousily.com/posts/time-series-anomaly-detection-using-lstm-autoencoder-with-pytorch-in-python/
 def train_model(model, train_dataloader, val_dataloader, device,
-                num_epochs=100, learning_rate=1e-3):
+                num_epochs=100, learning_rate=1e-3, print_every_n_epochs=25):
     optimizer = torch.optim.Adam(model.parameters(), lr = learning_rate)
     # triplicate_feature_weights = []
     # for x in FEATURE_WEIGHTS:
     #     triplicate_feature_weights.extend([x, x, x])
     weights_tensor = torch.tensor(np.array(FEATURE_WEIGHTS)).type(torch.FloatTensor)
-    criterion = nn.BCEWithLogitsLoss(weight=weights_tensor, reduction='mean')
+    criterion = nn.BCEWithLogitsLoss(weight=weights_tensor, reduction='sum')
     
     history = dict(train=[], val=[])
 
@@ -89,6 +90,15 @@ def train_model(model, train_dataloader, val_dataloader, device,
                 target = target.type(torch.FloatTensor)
                 loss = criterion(prediction, target)
                 val_losses.append(loss.item())
+
+                if epoch % print_every_n_epochs == 0:
+                    print('---')
+                    print('fv of first segment of first word in validation batch:')
+                    print('prediction:')
+                    print(F.sigmoid(prediction).numpy()[0, 0, :])
+                    print('target:')
+                    print(target.numpy()[0, 0, :])
+                    print('---')
 
         train_loss = np.mean(train_losses)
         val_loss = np.mean(val_losses)
