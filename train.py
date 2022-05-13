@@ -100,7 +100,8 @@ def train_model(model, train_dataloader, val_dataloader, device,
             _encoded, prediction = model(target)
 
             target = target.type(torch.FloatTensor) # to allow loss comparison
-            loss = criterion(prediction, target)
+            tgt_lengths = tgt_lengths.type(torch.FloatTensor)
+            loss = criterion(prediction, target, tgt_lengths)
 
             # backward pass
             loss.backward()
@@ -116,7 +117,8 @@ def train_model(model, train_dataloader, val_dataloader, device,
                 _encoded, prediction = model(target)
 
                 target = target.type(torch.FloatTensor)
-                loss = criterion(prediction, target)
+                tgt_lengths = tgt_lengths.type(torch.FloatTensor)
+                loss = criterion(prediction, target, tgt_lengths)
                 val_losses.append(loss.item())
 
                 if (i == 0) and (epoch % print_every_n_epochs == 0):
