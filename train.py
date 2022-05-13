@@ -49,7 +49,7 @@ def weighted_loss(prediction, target):
     loss = 1000*torch.mean(repeated_weights * (target - prediction)**2)
     return loss
 
-def masked_bce(pred, target, tgt_lengths):
+def masked_bce(pred, target, tgt_lengths, weighted=True):
     # pred: (N, L, H_out)
     # target: (N, L, H_out)
     # tgt_lengths: (N,)
@@ -64,7 +64,10 @@ def masked_bce(pred, target, tgt_lengths):
     # construct the weight vector to pointwise multiply with the cross entropy vector
     # this has the double purpose of applying a weighting to particular features
     # and letting us zero out the loss from PAD tokens
-    weight_vec = torch.tensor(np.array(FEATURE_WEIGHTS)) # (H_out,)
+    if weighted:
+        weight_vec = torch.tensor(np.array(FEATURE_WEIGHTS)) # (H_out,)
+    else:
+        weight_vec = torch.ones((len(FEATURE_WEIGHTS),)) # (H_out,)
     iterated_weight_vec = weight_vec.repeat((pred.size(0), MAX_SEQ_LEN_WITH_EOW)) # (N, L*H_out)
     # ngl I don't understand how this works, pulled from https://stackoverflow.com/questions/53403306/how-to-batch-convert-sentence-lengths-to-masks-in-pytorch
     # it creates an array such that the ith element is True iff the vector at that position should
