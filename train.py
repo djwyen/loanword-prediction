@@ -49,6 +49,34 @@ def weighted_loss(prediction, target):
     loss = 1000*torch.mean(repeated_weights * (target - prediction)**2)
     return loss
 
+def masked_bce(pred, target, tgt_lengths):
+    # pred: (N, L, H_out)
+    # target: (N, L, H_out)
+    # tgt_lengths: (N,)
+    
+    # flatten the time-stepped predictions/target into single vectors
+    pred = torch.reshape(pred, (pred.size(0), -1)) # (N, L*H_out)
+    target = torch.reshape(target, (target.size(0), -1)) # (N, L*H_out)
+
+    # calculate the cross-entropy on _all_ values. Notably we do not apply the weight at this time
+    cross_entropy_vec = F.binary_cross_entropy_with_logits(pred, target) # (N, L*H_out)
+
+    # construct the weight vector to pointwise multiply with the cross entropy vector
+    # this has the double purpose of applying a weighting to particular features
+    # and letting us zero out the loss from PAD tokens
+    weight_vec = torch.tensor(np.array(FEATURE_WEIGHTS)) # (H_out,)
+    iterated_weight_vec = weight_vec.repeat((pred.size(0), MAX_SEQ_LEN_WITH_EOW)) # (N, L*H_out)
+    # ngl I don't understand how this works, pulled from https://stackoverflow.com/questions/53403306/how-to-batch-convert-sentence-lengths-to-masks-in-pytorch
+    # it creates an array such that the ith element is True iff the vector at that position should
+    # be retained and not masked away from the loss
+    mask_vec = torch.arange(MAX_SEQ_LEN_WITH_EOW).expand(len(tgt_lengths), MAX_SEQ_LEN_WITH_EOW) < tgt_lengths.unsqueeze(1) # (N, L)
+    mask_vec = mask_vec.unsqueeze(2) # (N, L, 1)
+    mask_vec = mask_vec.repeat((1, 1, NUM_PHONETIC_FEATURES)) # (N, L, H_out)
+    mask_vec = torch.reshape(mask_vec, (mask_vec.size(0), -1)) # (N, L*H_out)
+    weight_mask_vec = iterated_weight_vec * mask_vec # (N, L*H_out)
+    weighted_masked_crossent = cross_entropy_vec * weight_mask_vec # (N, L*H_out)
+    return torch.sum(weighted_masked_crossent) / pred.size(0) # take average loss per entry
+
 # largely based off of https://curiousily.com/posts/time-series-anomaly-detection-using-lstm-autoencoder-with-pytorch-in-python/
 def train_model(model, train_dataloader, val_dataloader, device,
                 num_epochs=100, learning_rate=1e-3, print_every_n_epochs=25):
