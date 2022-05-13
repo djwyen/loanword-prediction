@@ -1,6 +1,6 @@
 import csv
 from typing import List, Mapping
-from data_processing.data_errors import UnsupportedKanaError
+from .data_errors import UnsupportedKanaError
 
 import numpy as np
 import panphon
@@ -16,10 +16,15 @@ class TranscriptionStyle:
 
 TRANSCRIPTION_STYLE = TranscriptionStyle.BROAD # can be set via a commandline argument, eventually
 
+NUM_PHONETIC_FEATURES = 22 # Panphon by default gives you 24 features, but the last two corresond to tonal features so I drop them
+CATEGORIES_PER_FEATURE = 3 # the categories being {+, -, 0} in that order
+
 # pulled from https://github.com/dmort27/panphon/blob/master/panphon/data/feature_weights.csv
 # some arbitrary weighting of the features
 FEATURE_WEIGHTS = [1,1,1,0.5,0.25,0.25,0.25,0.125,0.125,0.125,0.125,0.25,0.25,0.125,0.25,0.25,0.25,0.25,0.25,0.25,0.125,0.25]
-NUM_PHONETIC_FEATURES = 22
+TRIPLICATE_FEATURE_WEIGHTS = []
+for w in FEATURE_WEIGHTS:
+    TRIPLICATE_FEATURE_WEIGHTS.extend([w, w, w])
 
 class Transcriber():
     """
@@ -314,22 +319,6 @@ class Transcriber():
                 multihot_fv.extend(val_to_onehot[feature_val])
             result.append(multihot_fv)
         return result
-
-    def greedy_select_segment(self, fv, weighted=True):
-        # returns the ipa character in Japanese with the closest fv representation
-        # to the given segment
-        least_distance = None
-        closest_seg = None
-        for c, vec in self.shorthand_to_fv_dict.items():
-            total = 0
-            for val1, val2, w in zip(fv, vec, FEATURE_WEIGHTS):
-                if not weighted:
-                    w = 1
-                total += w * ((val1 - val2)**2)
-            if least_distance is None or total < least_distance:
-                least_distance = total
-                closest_seg = c
-        return {v: k for k, v in self.ipa_to_shorthand_dict.items()}[closest_seg]
 
     def katakana_to_romaji(self, word_in_katakana):
         # TODO implement similar to katakana_to_ipa; create a csv with the transcription equivalents (and special chars)

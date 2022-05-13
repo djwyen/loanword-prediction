@@ -1,9 +1,12 @@
+import csv
+
 import numpy as np
 import torch
+import torch.nn.functional as F
 from panphon import FeatureTable
 from panphon.segment import Segment
 
-from .transcriber import Transcriber
+from .transcriber import Transcriber, FEATURE_WEIGHTS, SHORTHAND_TO_FV_CSV
 from .bccwj_dataset import MAX_SEQ_LEN_NO_PAD, NUM_PHONETIC_FEATURES, CATEGORIES_PER_FEATURE, PAD_BINARY_FV, END_BINARY_FV
 
 class WordLoaner():
@@ -17,6 +20,16 @@ class WordLoaner():
         self._ft = FeatureTable()
 
         self.FEATURES = ['syl', 'son', 'cons', 'cont', 'delrel', 'lat', 'nas', 'strid', 'voi', 'sg', 'cg', 'ant', 'cor', 'distr', 'lab', 'hi', 'lo', 'back', 'round', 'velaric', 'tense', 'long']
+        self.shorthand_to_fv_dict = {}
+        with open(SHORTHAND_TO_FV_CSV) as f:
+            reader = csv.reader(f)
+            header = next(reader)
+            for line in reader:
+                shorthand_char = line[0]
+                ipa = line[1]
+                fv_as_strings = line[2:]
+                fv = [int(s) for s in fv_as_strings]
+                self.shorthand_to_fv_dict[shorthand_char] = fv
 
     def _pad_word(self, fv):
         # pads a word's feature vector to be a correctly formatted input to the model
@@ -32,7 +45,9 @@ class WordLoaner():
         # if discretize is true, the outputs are rounded to the nearest integer
 
         # assert(self._ft.validate_word(ipa))
-        fv = self._t.ipa_to_feature_vectors(ipa)
+        # fv = self._t.ipa_to_feature_vectors(ipa)
+        shorthand = self._t.ipa_to_shorthand(ipa)
+        fv = self._t.shorthand_to_fv(shorthand)
         fv = self._t.fv_to_binary_fv(fv)
         fv = self._pad_word(fv)
         fv = torch.tensor(np.array(fv)) # fv: (L, H_in)
@@ -45,6 +60,45 @@ class WordLoaner():
             fv = np.rint(fv)
 
         return fv
+
+    def greedy_select_segment(self, fv, weighted=True):
+        # returns the ipa character in Japanese with the closest fv representation
+        # to the given segment
+        least_distance = None
+        closest_seg = None
+        # extend shorthand dict with vectors for the eow and pad tokens
+        # we need to binarize the fv
+        shorthand_to_fv_dict_extended = {k: self._t.fv_to_binary_fv([v])[0] for k, v in self._t.shorthand_to_fv_dict.items()}
+        # shorthand_to_fv_dict_extended['$'] = [0] * NUM_PHONETIC_FEATURES
+        # shorthand_to_fv_dict_extended['_'] = [1] * NUM_PHONETIC_FEATURES
+
+        # print('for', fv)
+        for c, vec in shorthand_to_fv_dict_extended.items():
+            # print(f'considering {c}')
+            # print(vec)
+            total = 0
+            for val1, val2, w, feature in zip(fv, vec, FEATURE_WEIGHTS, self.FEATURES):
+                if not weighted:
+                    w = 1
+                diff = w * (np.abs(val1 - val2))
+                # print(f'diff at {feature}: {diff}')
+                total += diff
+            if least_distance is None or total < least_distance:
+                least_distance = total
+                closest_seg = c
+            # print('total distance', total)
+        shorthand_to_ipa = {v: k for k, v in self._t.ipa_to_shorthand_dict.items()}
+        # shorthand_to_ipa['$'] = '.'
+        # shorthand_to_ipa['_'] = ''
+        # print('---')
+        return shorthand_to_ipa[closest_seg]
+
+    def fv_to_closest_word(self, fvs):
+        # takes in a list of feature vectors and returns the IPA string with the closest segment for each feature vector
+        result = ''
+        for fv in fvs:
+            result += self.greedy_select_segment(fv, weighted=True)
+        return result
 
     def loan_word(self, ipa):
         # TODO DEPRECATED
