@@ -76,7 +76,7 @@ class Decoder(nn.Module):
 
         self.bridge = nn.Linear(enc_hidden_size, hidden_size)
         self.postbridge = nn.ReLU()
-        self.rnn = nn.GRU(hidden_size, output_size, num_layers,
+        self.rnn = nn.GRU(hidden_size, hidden_size, num_layers,
                            batch_first=True,
                            dropout=dropout)
         self.preoutput = nn.Linear(hidden_size, output_size)
@@ -84,20 +84,22 @@ class Decoder(nn.Module):
     def forward_step(self, x):
         # perform a single step of unrolling the decoder
         # x: (N, 1, H_in)
-        x, h_n = self.rnn(x) # x: (N, 1, H_out)
-                             # h_n: (n_layers, N, H_out)
+        x, h_n = self.rnn(x) # x: (N, 1, H_in)
+                             # h_n: (n_layers, N, H_in)
         return x, h_n
 
     def forward(self, x):
         # x: (N, H_enc_in)
+        pre_output_vectors = []
         # we need to copy the hidden state tensor L times for the L decodes:
         x = self.bridge(x) # (N, H_in)
         x = self.postbridge(x) # (N, H_in)
         x = x.unsqueeze(1) # (N, 1, H_in)
         for i in range(self.seq_len):
             x, h_n = self.forward_step(x) # (N, 1, H_in)
-        x = x.squeeze() # (N, H_in)
-        x = self.preoutput(x) # (N, H_out)
+            pre_output_vectors.append(x)
+        x = torch.cat(pre_output_vectors, dim=1) # (N, L, H_in)
+        x = self.preoutput(x) # (N, L, H_out)
         return x
 
     def decode(self, x):
