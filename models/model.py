@@ -67,26 +67,37 @@ class Encoder(nn.Module):
 
 
 class Decoder(nn.Module):
-    def __init__(self, seq_len, hidden_size, output_size, num_layers=1, dropout=0.):
+    def __init__(self, seq_len, enc_hidden_size, hidden_size, output_size, num_layers=1, dropout=0.):
         super().__init__()
 
         self.seq_len = seq_len
         self.hidden_size = hidden_size
         self.output_size = output_size
 
-        self.bridge = nn.ReLU()
+        self.bridge = nn.Linear(enc_hidden_size, hidden_size)
+        self.postbridge = nn.ReLU()
         self.rnn = nn.GRU(hidden_size, output_size, num_layers,
                            batch_first=True,
                            dropout=dropout)
+        self.preoutput = nn.Linear(hidden_size, output_size)
+
+    def forward_step(self, x):
+        # perform a single step of unrolling the decoder
+        # x: (N, 1, H_in)
+        x, h_n = self.rnn(x) # x: (N, 1, H_out)
+                             # h_n: (n_layers, N, H_out)
+        return x, h_n
 
     def forward(self, x):
-        # x: (N, H_in)
+        # x: (N, H_enc_in)
         # we need to copy the hidden state tensor L times for the L decodes:
         x = self.bridge(x) # (N, H_in)
+        x = self.postbridge(x) # (N, H_in)
         x = x.unsqueeze(1) # (N, 1, H_in)
-        x = x.repeat(1, self.seq_len, 1) # (N, L, H_in)
-        x, h_n = self.rnn(x) # x: (N, L, H_out)
-                             # h_n: (n_layers, N, H_out)
+        for i in range(self.seq_len):
+            x, h_n = self.forward_step(x) # (N, 1, H_in)
+        x = x.squeeze() # (N, H_in)
+        x = self.preoutput(x) # (N, H_out)
         return x
 
     def decode(self, x):
@@ -125,7 +136,7 @@ class AutoEncoder(nn.Module):
                                num_layers=n_encoder_layers,
                                bidirectional=bidirectional_encoder,
                                dropout=enc_dropout)
-        self.decoder = Decoder(self.seq_len, (decoder_input_factor * self.hidden_size), self.input_size,
+        self.decoder = Decoder(self.seq_len, (decoder_input_factor * self.hidden_size), self.hidden_size, self.input_size,
                                num_layers=n_decoder_layers,
                                dropout=dec_dropout)
 
