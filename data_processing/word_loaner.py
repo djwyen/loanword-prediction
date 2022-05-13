@@ -4,9 +4,7 @@ from panphon import FeatureTable
 from panphon.segment import Segment
 
 from .transcriber import Transcriber
-
-NUM_PHONETIC_FEATURES = 22 # Panphon gives 24 by default, but we remove the last two, which correspond to tone
-MAX_SEQ_LEN_NO_PAD = 20
+from .bccwj_dataset import MAX_SEQ_LEN_NO_PAD, NUM_PHONETIC_FEATURES, CATEGORIES_PER_FEATURE, PAD_BINARY_FV, END_BINARY_FV
 
 class WordLoaner():
     '''
@@ -22,31 +20,25 @@ class WordLoaner():
 
     def _pad_word(self, fv):
         # pads a word's feature vector to be a correctly formatted input to the model
-        PAD_FV = [0] * NUM_PHONETIC_FEATURES
-        END_FV = [2] * NUM_PHONETIC_FEATURES
-
         length_diff = MAX_SEQ_LEN_NO_PAD - len(fv)
-        fv.append(END_FV)
+        fv.append(END_BINARY_FV)
         for _ in range(length_diff):
-            fv.append(PAD_FV)
-
+            fv.append(PAD_BINARY_FV)
         return fv
 
     def word_to_fv(self, ipa, discretize=True):
         # returns the predicted features for a given word, given in ipa.
         # ie turns a word into feature vectors.
         # if discretize is true, the outputs are rounded to the nearest integer
-        # TODO should we also clamp the output so that features are in the set {-1, 0, 1, 2} ?
-        # or before that, remove the EOS tokens (presumably only source of 2) as well?      
 
         # assert(self._ft.validate_word(ipa))
         fv = self._t.ipa_to_feature_vectors(ipa)
+        fv = self._t.fv_to_binary_fv(fv)
         fv = self._pad_word(fv)
-        fv = np.array(fv)
-        fv = torch.tensor(fv) # fv: (L, H_in)
+        fv = torch.tensor(np.array(fv)) # fv: (L, H_in)
         fv = fv.unsqueeze(0) # fv: (1, L, H_in)
-        fv = self.model.loan_word_from_fv(fv) # fv: (1, 2L, H_in)
-        fv = fv.squeeze() # fv: (2L, H_in)
+        fv = self.model.loan_word_from_fv(fv) # fv: (1, 2*L, H_in)
+        fv = fv.squeeze() # fv: (2*L, H_in)
         # convert to a numpy array for convenience
         fv = fv.numpy()
         if discretize:
@@ -62,7 +54,9 @@ class WordLoaner():
 
         closest_transcription = ''
         for seg_fv in word_fv:
-            closest_transcription += self._t.greedy_select_segment(seg_fv)
+            # skip pad or eow tokens
+            # print(seg_fv)
+            closest_transcription += self._t.greedy_select_segment(seg_fv, weighted=True)
 
         # segments = []
 
