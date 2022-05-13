@@ -75,7 +75,8 @@ def masked_bce(pred, target, tgt_lengths):
     mask_vec = torch.reshape(mask_vec, (mask_vec.size(0), -1)) # (N, L*H_out)
     weight_mask_vec = iterated_weight_vec * mask_vec # (N, L*H_out)
     weighted_masked_crossent = cross_entropy_vec * weight_mask_vec # (N, L*H_out)
-    return torch.sum(weighted_masked_crossent) / pred.size(0) # take average loss per entry
+    return torch.sum(weighted_masked_crossent) # taking sum of losses is ok since batch size won't be changed later
+
 
 # largely based off of https://curiousily.com/posts/time-series-anomaly-detection-using-lstm-autoencoder-with-pytorch-in-python/
 def train_model(model, train_dataloader, val_dataloader, device,
@@ -85,7 +86,8 @@ def train_model(model, train_dataloader, val_dataloader, device,
     # for x in FEATURE_WEIGHTS:
     #     triplicate_feature_weights.extend([x, x, x])
     weights_tensor = torch.tensor(np.array(FEATURE_WEIGHTS)).type(torch.FloatTensor)
-    criterion = nn.BCEWithLogitsLoss(weight=weights_tensor, reduction='sum')
+    # criterion = nn.BCEWithLogitsLoss(weight=weights_tensor, reduction='sum')
+    criterion = masked_bce
     
     history = dict(train=[], val=[])
 
@@ -96,6 +98,7 @@ def train_model(model, train_dataloader, val_dataloader, device,
         model.train()
         for target, tgt_lengths in train_dataloader:
             optimizer.zero_grad()
+
             target = target.to(device)
             _encoded, prediction = model(target)
 
@@ -125,7 +128,7 @@ def train_model(model, train_dataloader, val_dataloader, device,
                     print('---')
                     print('fv of first segment of first word in validation batch:')
                     print('prediction:')
-                    print(F.sigmoid(prediction).numpy()[0, 0, :])
+                    print(torch.sigmoid(prediction).numpy()[0, 0, :])
                     print('target:')
                     print(target.numpy()[0, 0, :])
                     print('---')
