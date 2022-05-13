@@ -173,6 +173,8 @@ class AutoEncoder(nn.Module):
         with torch.no_grad():
             encoded = self.encoder.encode(x) # (N, 2*H_out)
             decoded = self.decoder.decode(encoded) # (N, 2*L, H_in)
+            # because we aren't then passing this to the BCELogits loss function, we should translate the logits into actual probabilities
+            decoded = torch.sigmoid(decoded)
         self.train()
         return decoded
 
