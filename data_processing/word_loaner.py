@@ -47,6 +47,7 @@ class WordLoaner():
         return fv
 
     def loan_word(self, ipa):
+        # TODO DEPRECATED
         # turns an ipa word into its loaned form and returns the segments
         permissible_values = {1, 0, -1}
         
