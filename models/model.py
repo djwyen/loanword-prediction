@@ -56,12 +56,12 @@ class Encoder(nn.Module):
             x = x.type(torch.FloatTensor)
             x, h_n = self.rnn(x) # x: (N, L, 2*H_out)
                                  # h_n: (2*n_layers, N, H_out)
-        # concatenate the layers' hidden representations
-        fwd_final_h_n = h_n[0:h_n.size(0):2, :, :] # (n_layers, N, H_out)
-        bwd_final_h_n = h_n[1:h_n.size(0):2, :, :] # (n_layers, N, H_out)
-        x = torch.cat([fwd_final_h_n, bwd_final_h_n], dim=2) # (n_layers, N, 2*H_out)
-        x = torch.permute(x, (1,0,2)) # (N, n_layers, 2*H_out)
-        x = torch.reshape(x, (x.size(0), -1)) # (N, 2*H_out*n_layers)
+            # concatenate the layers' hidden representations
+            fwd_final_h_n = h_n[0:h_n.size(0):2, :, :] # (n_layers, N, H_out)
+            bwd_final_h_n = h_n[1:h_n.size(0):2, :, :] # (n_layers, N, H_out)
+            x = torch.cat([fwd_final_h_n, bwd_final_h_n], dim=2) # (n_layers, N, 2*H_out)
+            x = torch.permute(x, (1,0,2)) # (N, n_layers, 2*H_out)
+            x = torch.reshape(x, (x.size(0), -1)) # (N, 2*H_out*n_layers)
         self.train()
         return x
 
@@ -109,11 +109,15 @@ class Decoder(nn.Module):
         # x: (N, H_in) nb that in principle one can use this to decode many words at once, even though we typically only do one
         self.eval()
         with torch.no_grad():
+            pre_output_vectors = []
             x = self.bridge(x) # (N, H_in)
+            x = self.postbridge(x) # (N, H_in)
             x = x.unsqueeze(1) # (N, 1, H_in)
-            x = x.repeat(1, 2*self.seq_len, 1) # (N, 2*L, H_in)
-            x, h_n = self.rnn(x) # x: (N, 2*L, H_out)
-                                 # h_n: (n_layers, N, H_out)
+            for i in range(2*self.seq_len): # we allow for potentially twice as many outputs in the decoded, as length could be more
+                x, h_n = self.forward_step(x) # (N, 1, H_in)
+                pre_output_vectors.append(x)
+            x = torch.cat(pre_output_vectors, dim=1) # (N, 2*L, H_in)
+            x = self.preoutput(x) # (N, 2*L, H_out)
         self.train()
         return x
 
@@ -152,14 +156,15 @@ class AutoEncoder(nn.Module):
         self.eval()
         with torch.no_grad():
             encoded = self.encoder(x)
+        self.train()
         return encoded
 
     def decode(self, encoded):
         self.eval()
         with torch.no_grad():
             decoded = self.decoder(encoded)
-            squeezed_decoded = decoded.squeeze() # as the output will often have N=1 anyway
-        return squeezed_decoded
+        self.train()
+        return decoded
     
     def loan_word_from_fv(self, x):
         # x: (N, L, H_in) ; N=1 typically but in principle you could batch things
