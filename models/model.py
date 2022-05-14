@@ -91,7 +91,6 @@ class Decoder(nn.Module):
     def forward(self, x):
         # x: (N, H_enc_in)
         pre_output_vectors = []
-        # we need to copy the hidden state tensor L times for the L decodes:
         x = self.bridge(x) # (N, H_in)
         x = self.postbridge(x) # (N, H_in)
         x = x.unsqueeze(1) # (N, 1, H_in)
