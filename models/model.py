@@ -66,7 +66,13 @@ class Encoder(nn.Module):
         return x
 
 
-class Decoder(nn.Module):
+class UnrollableDecoder(nn.Module):
+    """
+    Version of the Decoder in which it is unrolled:
+    the initial input is (the linear projection of) the final hidden state from the encoder,
+    and at each time step the output from the previous time step is fed back in as an input,
+    up to the max sequence length.
+    """
     def __init__(self, seq_len, enc_hidden_size, hidden_size, output_size, num_layers=1, dropout=0.):
         super().__init__()
 
