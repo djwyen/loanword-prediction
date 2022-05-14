@@ -77,6 +77,7 @@ class UnrollableDecoder(nn.Module):
         super().__init__()
 
         self.seq_len = seq_len
+        self.enc_hidden_size = enc_hidden_size
         self.hidden_size = hidden_size
         self.output_size = output_size
 
