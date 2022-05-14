@@ -171,6 +171,7 @@ def main():
                         n_encoder_layers=parameters['encoder_layers'],
                         n_decoder_layers=parameters['decoder_layers'],
                         bidirectional_encoder=True,
+                        decoder_type='repeat_hidden',
                         enc_dropout=parameters['encoder_dropout'],
                         dec_dropout=parameters['decoder_dropout'])
 

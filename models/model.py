@@ -128,11 +128,56 @@ class UnrollableDecoder(nn.Module):
         return x
 
 
+class Decoder(nn.Module):
+    """
+    Version of the Decoder in which the input at each time step is an identical copy of the
+    (possibly projected) final hidden state from the encoder.
+    """
+    def __init__(self, seq_len, hidden_size, output_size, num_layers=1, dropout=0.):
+        super().__init__()
+
+        self.seq_len = seq_len
+        self.hidden_size = hidden_size
+        self.output_size = output_size
+
+        self.bridge = nn.ReLU()
+        self.rnn = nn.GRU(hidden_size, output_size, num_layers,
+                           batch_first=True,
+                           dropout=dropout)
+
+    def forward(self, x):
+        # x: (N, H_in)
+        pre_output_vectors = []
+        x = self.bridge(x) # (N, H_in)
+        # we need to copy the hidden state tensor L times for the L decodes:
+        x = x.unsqueeze(1) # (N, 1, H_in)
+        x = x.repeat(1, self.seq_len, 1) # (N, L, H_in)
+        x, h_n = self.rnn(x) # x: (N, L, H_out)
+                             # h_n: (n_layers, N, H_out)
+        return x
+
+    def decode(self, x):
+        # lets one use the model as a decoder alone, without training it.
+        # when decoding, we let the model potentially predict sequences twice as long
+        # as the input. Hence, we concatenate x with itself to get a 2L long sequence.
+        # x: (N, H_in) nb that in principle one can use this to decode many words at once, even though we typically only do one
+        self.eval()
+        with torch.no_grad():
+            x = self.bridge(x) # (N, H_in)
+            x = x.unsqueeze(1) # (N, 1, H_in)
+            x = x.repeat(1, 2*self.seq_len, 1) # (N, 2*L, H_in)
+            x, h_n = self.rnn(x) # x: (N, 2*L, H_out)
+                                # h_n: (n_layers, N, H_out)
+        self.train()
+        return x
+
+
 class AutoEncoder(nn.Module):
     def __init__(self, seq_len, input_size, hidden_size,
                  n_encoder_layers=3,
                  n_decoder_layers=3,
                  bidirectional_encoder=True,
+                 decoder_type='repeat_hidden',
                  enc_dropout=0.1,
                  dec_dropout=0.1):
         super().__init__()
@@ -140,6 +185,7 @@ class AutoEncoder(nn.Module):
         self.seq_len = seq_len
         self.input_size = input_size
         self.hidden_size = hidden_size
+        assert(decoder_type in {'repeat_hidden', 'unrollable'})
         
         enc_directions = 2 if bidirectional_encoder else 1
         decoder_input_factor = enc_directions * n_encoder_layers
@@ -148,9 +194,14 @@ class AutoEncoder(nn.Module):
                                num_layers=n_encoder_layers,
                                bidirectional=bidirectional_encoder,
                                dropout=enc_dropout)
-        self.decoder = Decoder(self.seq_len, (decoder_input_factor * self.hidden_size), self.hidden_size, self.input_size,
-                               num_layers=n_decoder_layers,
-                               dropout=dec_dropout)
+        if decoder_type == 'repeat_hidden':
+            self.decoder = Decoder(self.seq_len, (decoder_input_factor * self.hidden_size), self.input_size,
+                                num_layers=n_decoder_layers,
+                                dropout=dec_dropout)
+        elif decoder_type == 'unrollable':
+            self.decoder = UnrollableDecoder(self.seq_len, (decoder_input_factor * self.hidden_size), self.hidden_size, self.input_size,
+                                             num_layers=n_decoder_layers,
+                                             dropout=dec_dropout)
 
     def forward(self, x):
         # x: (N, L, H_in) ie (N, L, input_size)
