@@ -17,12 +17,12 @@ TODO finish copy
 
 
 ## Tasks:
-- [ ] Identify source of compute for this project, eg Google Colab or a professor's servers
+- [X] Identify source of compute for this project, eg Google Colab or a professor's servers (used Google Colab)
 - [X] Identify which language to study in this project (will be doing Japanese — its phonotactics and loanword acquisition are well-studied. Furthermore, Japanese has rather simple phonotactics, so it seems like an easier task for a model to learn; and it has copious amounts of well-documented recent loanwords.)
 - [X] Find a corpus representing naturalistic speech in this language (BCCWJ seems good)
 - [ ] Find lists of loanwords with etymologies for this language, perhaps by scraping Wiktionary
-- [ ] Design an autoencoder model to learn this task. RNN seems well-suited, but a CNN may be useful for long distance effects that could be relevant: vowel harmony in Turkish, Lyman's law in Japanese. A transformer may be well-suited but seems overkill.
-- [ ] Summarize results in a writeup
+- [X] Design an autoencoder model to learn this task. RNN seems well-suited, but a CNN may be useful for long distance effects that could be relevant: vowel harmony in Turkish, Lyman's law in Japanese. A transformer may be well-suited but seems overkill. (used RNN)
+- [X] Summarize results in a writeup
 
 ## Datasets:
 
