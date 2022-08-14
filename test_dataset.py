@@ -81,17 +81,25 @@ class TestDataset(unittest.TestCase):
     
     def test_output_dims(self):
         entry = next(iter(self.dataset))
-        self.assertIsInstance(entry, np.ndarray)
-        self.assertEqual(entry.shape, (MAX_SEQ_LEN_WITH_PAD, NUM_PHONETIC_FEATURES))
+        array, length = entry
+        self.assertIsInstance(array, np.ndarray)
+        self.assertIsInstance(length, float)
+        self.assertEqual(array.shape, (MAX_SEQ_LEN_WITH_PAD, NUM_PHONETIC_FEATURES))
     
     def test_accesses(self):
         first_access = self.dataset[0]
-        self.assertEqual(first_access.shape, (MAX_SEQ_LEN_WITH_PAD, NUM_PHONETIC_FEATURES))
-        self.assertTrue(all([(x == 1) for x in first_access[-1, :]])) # ie a PAD token
+        first_vec_array, first_word_length = first_access
+        self.assertEqual(first_vec_array.shape, (MAX_SEQ_LEN_WITH_PAD, NUM_PHONETIC_FEATURES))
+        self.assertEqual(first_word_length, 2)
+        self.assertTrue(all([(x == 1) for x in first_vec_array[2, :]])) # the word boundary token
+        self.assertTrue(all([(x == 0) for x in first_vec_array[-1, :]])) # the last token should be a PAD token
 
         middle_access = self.dataset[17511]
-        self.assertEqual(middle_access.shape, (MAX_SEQ_LEN_WITH_PAD, NUM_PHONETIC_FEATURES))
-        self.assertTrue(all([(x == 1) for x in middle_access[-1, :]])) # ie a PAD token
+        mid_vec_array, mid_word_length = middle_access
+        self.assertEqual(mid_vec_array.shape, (MAX_SEQ_LEN_WITH_PAD, NUM_PHONETIC_FEATURES))
+        self.assertEqual(mid_word_length, 7)
+        self.assertTrue(all([(x == 1) for x in mid_vec_array[7, :]])) # the word boundary token
+        self.assertTrue(all([(x == 0) for x in mid_vec_array[-1, :]])) # ie a PAD token
 
 
 if __name__ == '__main__':
