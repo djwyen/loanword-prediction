@@ -44,7 +44,9 @@ class BCCWJDataset(Dataset):
 
     def __getitem__(self, idx):
         '''
-        Returns items as NumPy Arrays, padded to be of the max seq len; and the length of the underlying word
+        Returns items as a tuple.
+        The first element is a NumPy Array padded to be of the max seq len.
+        The second element is the length of the underlying word.
         '''
         # TODO assert index is less than length?
         true_idx = self.indices[idx] # the index of the item in pared_BCCWJ we are retrieving
