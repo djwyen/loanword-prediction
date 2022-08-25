@@ -7,7 +7,6 @@ from torch.utils.data import DataLoader
 from data_processing.transcriber import Transcriber
 from data_processing.bccwj_dataset import BCCWJDataset, split_pared_bccwj
 from models.model import Encoder, Decoder, AutoEncoder
-from process_bccwj_to_fv import CATEGORIES_PER_FEATURE
 
 SEED = 888
 
@@ -15,7 +14,6 @@ N_WORDS = 36396
 
 BATCH_SIZE = 64
 NUM_PHONETIC_FEATURES = 22
-CATEGORIES_PER_FEATURE = 3
 HIDDEN_DIM = 32
 MAX_SEQ_LEN_NO_STOP = 20
 MAX_SEQ_LEN_WITH_STOP = MAX_SEQ_LEN_NO_STOP + 1 # due to the added stop token at the end
@@ -31,7 +29,7 @@ class TestModelDims(unittest.TestCase):
         self.t = Transcriber()
 
         # these are just an encoder/decoder detached from the rest of the model, made to check the dims work out
-        self.input_size = NUM_PHONETIC_FEATURES * CATEGORIES_PER_FEATURE
+        self.input_size = NUM_PHONETIC_FEATURES
         self.encoder = Encoder(MAX_SEQ_LEN_WITH_STOP, self.input_size, HIDDEN_DIM,
                                num_layers=N_ENCODER_LAYERS,
                                bidirectional=True)
@@ -67,8 +65,9 @@ class TestModelDims(unittest.TestCase):
         self.assertEqual(autoencoder_output.shape, (BATCH_SIZE, MAX_SEQ_LEN_WITH_STOP, self.input_size))
 
     def test_loaning_dims(self):
+        # TODO streamline this conversion process, it's a bit of a mess especially since everything is untyped
         some_gairaigo_fv = self.t.ipa_to_feature_vectors('kʌp')
-        some_gairaigo_fv = self.t.fv_to_multihot(some_gairaigo_fv)
+        some_gairaigo_fv = self.t.fv_to_binary_fv(some_gairaigo_fv)
         some_gairaigo_fv = torch.Tensor(np.array(some_gairaigo_fv))
         some_gairaigo_fv = some_gairaigo_fv.unsqueeze(0) # (1, L, H_in)
 
