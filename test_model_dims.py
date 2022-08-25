@@ -45,15 +45,15 @@ class TestModelDims(unittest.TestCase):
                                        bidirectional_encoder=True)
 
     def test_data_dims(self):
-        some_dataset_input = next(iter(self.dataset))
+        some_dataset_input, _ = next(iter(self.dataset))
         self.assertIsInstance(some_dataset_input, np.ndarray)
 
-        some_dataloader_input = next(iter(self.dataloader))
+        some_dataloader_input, _ = next(iter(self.dataloader))
         self.assertIsInstance(some_dataloader_input, torch.Tensor)
         self.assertEqual(some_dataloader_input.shape, (BATCH_SIZE, MAX_SEQ_LEN_WITH_STOP, self.input_size))
 
     def test_model_dims(self):
-        some_dataloader_input = next(iter(self.dataloader))
+        some_dataloader_input, _ = next(iter(self.dataloader))
         encoder_hidden_state = self.encoder(some_dataloader_input)
         # remember that we copy the hidden state as many times as we want to generate outputs,
         # hence the length is MAX_SEQ_LEN here as well
