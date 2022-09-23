@@ -11,7 +11,9 @@ When speakers of a given language borrow words from another language, they will 
 | ラッコ | rakko | Ainu _rakko_ "sea otter" |
 | トマト | tomato | Nahuatl _tomato_ "tomato" |
 
-Let us examine the first borrowing, "ice cream" -> "aisu kurīmu". A Japanese syllable must be of the form (C)(j)V(Q/n), where C is a consonant and Q is a geminated consonant. The English word "ice" /aɪs/ does not conform to this syllable structure, so it is corrected to /aisu/ through the epenthesis of a /u/. Note that this causes the segment /s/ to change from a final consonant to an initial consonant.
+Let us examine the first borrowing, "ice cream" -> "aisu kurīmu". A Japanese syllable must be of the form (C)(j)V(Q/N), where C is a consonant, Q is a geminated consonant, and N is a generic nasal. The English word "ice" /aɪs/ does not conform to this syllable structure due to the presence of a coda /-s/, so it is repaired to /aisu/ through the epenthesis (insertion) of a /u/. Note that this causes the segment /s/ to change from a final consonant to an initial consonant.
+
+Similarly, the English word "cream" /kɹiːm/ contains both a coda /-m/ as before, which is also repaired with epenthesis of a /u/. Additionally, it contains a consonant cluster /kɹ/, which is invalid in Japanese. The cluster is also repaired by epenthesis of a /u/. Several questions immediately arise: why is epenthesis of a /u/ the most common repair strategy? Why could it not have been a different vowel, such as /a/ or /i/? And why is epenthesis the strategy at all, when one could have instead deleted offending consonants and produced a form like */aɪ kīmu/? Why is the final m in "cream" repaired when syllable-final m is tolerated in Japanese? (This last question has a more ready answer: m has a place specification while the Japanese nasal generally lacks a place feature. But the question remains in a more abstract form: why not repair the segment by eliminating the place feature, yielding a form like */aisu kurīn/?)
 
 TODO finish copy
 
@@ -29,7 +31,7 @@ TODO finish copy
 ### Naturalistic Japanese (including Yamato, Sino-Japanese, and loanwords)
 
 - The Balanced Corpus of Contemporary Written Japanese (BCCWJ) [hosted here](https://ccd.ninjal.ac.jp/bccwj/en/index.html).
-- - The word frequency list (`BCCWJ_frequencylist_suw_ver1_0.zip`) and its manual (`BCCWJ_frequencylist_manual_ver1_0.pdf`) are [available here](https://ccd.ninjal.ac.jp/bccwj/en/freq-list.html)
+    - The word frequency list (`BCCWJ_frequencylist_suw_ver1_0.zip`) and its manual (`BCCWJ_frequencylist_manual_ver1_0.pdf`) are [available here](https://ccd.ninjal.ac.jp/bccwj/en/freq-list.html)
 
 ### Japanese loanwords and their etymologies
 - https://japanesetactics.com/english-gairaigo-list-learn-301-japanese-words-in-10-minutes
