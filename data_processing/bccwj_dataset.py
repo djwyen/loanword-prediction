@@ -15,6 +15,7 @@ from torch.utils.data import Dataset, random_split
 PATH_TO_PROCESSED_CSV = "data/BCCWJ/pared_BCCWJ.csv"
 PATH_TO_PROCESSED_GZ = "data/BCCWJ/fv_pared_BCCWJ.gz"
 PATH_TO_LENGTHS_GZ = "data/BCCWJ/BCCWJ_lengths.gz"
+N_BCCWJ_WORDS = 36396
 
 MAX_SEQ_LEN_NO_PAD = 20
 
@@ -26,7 +27,7 @@ PAD_BINARY_FV = [0] * NUM_PHONETIC_FEATURES
 # TODO could refactor to transcribe from kana to ipa in the Dataset, which would allow passing transcription broadness as a flag to the constructor for the Dataset. Pared_BCCWJ would just be to pick out the relevant words, and not to pretranscribe them.
 
 class BCCWJDataset(Dataset):
-    def __init__(self, indices=list(range(36396)), max_seq_len=20): # hardcoded values true as of May 11
+    def __init__(self, indices=list(range(N_BCCWJ_WORDS)), max_seq_len=MAX_SEQ_LEN_NO_PAD):
         # note: The max_seq_len here is the length of the longest sequence without the end-of-word token,
         #       which is something this module adds itself.
         #       However, the property max_seq_len it will be constructed with will be the correct length
@@ -71,6 +72,8 @@ def split_pared_bccwj(seed, frac, max_seq_len=None):
     n_test = n_words - n_train
     split = [n_train, n_test]
 
+    # TODO I don't think I read the documentation well enough — I think the first argument can literally
+    # be a dataset to be split.
     train_indices, test_indices = random_split(range(n_words), split,
                                                generator=torch.Generator().manual_seed(seed))
 
